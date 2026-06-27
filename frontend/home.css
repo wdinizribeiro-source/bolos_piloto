@@ -1,0 +1,165 @@
+
+
+/* Paleta: #FAF7F3, #F0E4D3, #DCC5B2, #D9A299 */
+
+/* Fundo geral */
+
+
+.navbar {
+
+  --bs-navbar-color: #aa491c;
+  --bs-navbar-hover-color: #d36f60;
+  --bs-navbar-active-color: #a04529;
+  --bs-navbar-brand-color: #8a5a44;
+  --bs-navbar-toggler-border-color: #e08d81;
+  --bs-body-bg: #a36a1a;
+
+}
+
+:root {
+  --bs-tertiary-bg: #0c0a08;              
+}
+
+
+  
+:root {
+  --bs-body-bg: #d36f60;;  /* fundo geral do corpo */
+}
+
+body {
+  --bs-body-color: #1f1f1f;
+}
+
+/* Seções principais */
+.section {
+  text-align: center;
+  margin: 40px 0;
+}
+
+/* Títulos */
+.section-title {
+  color: #dba06f;
+  margin-bottom: 20px;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+/* Texto padrão */
+.section-text {
+  max-width: 75%;
+  margin: 0 auto;
+  border-radius: 15px;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* Texto em destaque (ex.: cardápio) */
+.section-highlight {
+  background-color: #274e61;
+  max-width: 75%;
+  margin: 0 auto;
+  border-radius: 15px;
+  padding: 20px;
+  color: #fff;
+}
+
+
+
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #DCC5B2; 
+        margin: 0;
+  padding: 0;
+}
+
+/* Aparência geral dos cards */
+.card {
+    border: 1px solid #DCC5B2;        /* borda sutil */
+    border-radius: 12px;               /* cantos arredondados */
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    overflow: hidden;                   /* mantém imagem dentro do raio */
+    
+  }
+  
+  /* Imagem do card */
+  .card-img-top {
+    max-height: px;                 /* limita altura se quiser */
+    object-fit: cover;                  /* corta mantendo proporção */
+  }
+  
+  /* Conteúdo do card */
+  .card-body {
+    padding: 16px 18px;
+    background-color: #ecded7;  /* modifica fundo do cartão */
+    
+  }
+  
+  /* Título e texto */
+  .card-title {
+    
+        font-weight: 700;
+    margin-bottom: 8px;
+  }
+  
+  .card-text {
+    color: #9e7569; /* tom mais escuro para o texto do cartão */
+    line-height: 1.5;
+  }
+  
+  /* Botão (sobrescrevendo o .btn-info do Bootstrap com mais especificidade) */
+  .card .btn.btn-info {
+    background-color: #D9A299; /* modifica texto do botão do cartão */
+    border-color: #D9A299;
+        font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  
+  .card .btn.btn-info:hover {
+    background-color: #d36f60;         /* rosé no hover */
+    border-color: #d36f60;
+  }
+
+  
+  
+  /* Espaço entre colunas em grades (se não estiver usando g-*) */
+  
+  .bg-body-tertiary {
+    background-color: #F0E4D3 !important;
+  }
+
+
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  }
+  
+
+  .product-img {
+  width: 100%;
+  min-height: 500px;   /* altura mínima */
+  max-height: 400px;   /* altura máxima */
+  object-fit: cover;
+}
+
+  
+
+
+
+p{
+    color: #c28c61; /* modifica segunda linha texto footer */
+}
+
+small{
+    color: #c28c61; /* modifica terceira linha texto footer */
+}
+
+
+button:hover {
+    background-color: #d67061;
+}
+

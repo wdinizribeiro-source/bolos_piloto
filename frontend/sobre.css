@@ -1,0 +1,58 @@
+/* Paleta: #FAF7F3, #F0E4D3, #DCC5B2, #D9A299 */
+.bg-body-tertiary {
+    background-color: #F0E4D3 !important;
+}
+
+.navbar {
+
+    --bs-navbar-color: #aa491c;
+    --bs-navbar-hover-color: #d36f60;
+    --bs-navbar-active-color: #a04529;
+    --bs-navbar-brand-color: #8a5a44;
+    --bs-navbar-toggler-border-color: #e08d81;
+    --bs-body-bg: #a36a1a;
+  
+  }
+  
+
+body {
+    background-color: #e6d2c1;
+    color: #c54e3c;
+}
+
+div.card {
+    background-color: #DCC5B2;
+}
+
+h1 {
+    text-align: center;
+}
+
+p{
+    text-align: center;
+}
+
+h2 {
+    text-align: center;
+}
+
+ul{
+    text-align: center;
+}
+
+    p {
+        color: #c28c61;
+        /* modifica segunda linha texto footer */
+    }
+
+    small {
+        color: #c28c61;
+        /* modifica terceira linha texto footer */
+    }
+
+    h5 {
+        color: #c28c61;
+        ;
+    }
+
+

@@ -1,0 +1,89 @@
+/* Pagina contato */
+
+.navbar {
+
+    --bs-navbar-color: #aa491c;
+    --bs-navbar-hover-color: #d36f60;
+    --bs-navbar-active-color: #a04529;
+    --bs-navbar-brand-color: #8a5a44;
+    --bs-navbar-toggler-border-color: #e08d81;
+    --bs-body-bg: #a36a1a;
+
+}
+
+.bg-body-tertiary {
+    background-color: #F0E4D3 !important;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5dfc3;
+    margin: 0;
+    padding: 0;
+}
+
+.support-container {
+    max-width: 500px;
+    margin: 50px auto;
+    background: #e6d2c2;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(211, 12, 12, 0.1);
+}
+
+h2 {
+    text-align: center;
+    color: #dba06f;
+}
+
+h5 {
+    color: #dba06f;
+}
+
+p {
+    color: #dba06f;
+}
+
+small {
+    color: #dba06f;
+}
+
+label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
+    color: #dba06f;
+}
+
+input,
+textarea,
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #e6c0bb;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+button {
+    background-color: #df968b;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #d67061;
+}
+
+.success {
+    color: green;
+    margin-top: 10px;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+}
