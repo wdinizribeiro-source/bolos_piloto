@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 // Rotas da aplicação
-app.use("/cliente", clienteRoutes); 
+app.use("/clientes", clienteRoutes); 
 app.use("/categoria",categoriaRoutes);
 app.use("/entrega",entregaRoutes);// Adicione esta linha para as rotas de categoria
 
