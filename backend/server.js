@@ -5,6 +5,8 @@ import clienteRoutes from './src/routes/ClienteRoutes.js';
 import categoriaRoutes from './src/routes/categoriaRoutes.js';
 import entregaRoutes from './src/routes/entregaRoutes.js'; 
 import produtoRoutes from './src/routes/produtoRoutes.js'; 
+import pedidoRoutes from './src/routes/pedidoRoutes.js';
+import administradorRoutes from './src/routes/administradorRoutes.js';
 
 const app = express();
 
@@ -13,6 +15,8 @@ app.use(cors());
 app.use(express.json());
 
 // Rotas da aplicação
+app.use("/administrador", administradorRoutes);
+app.use("/pedido", pedidoRoutes);
 app.use("/clientes", clienteRoutes); 
 app.use("/categoria",categoriaRoutes);
 app.use("/entrega",entregaRoutes);

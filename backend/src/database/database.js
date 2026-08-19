@@ -1,19 +1,17 @@
+import 'dotenv/config';
 import mysql from 'mysql2/promise';
 
-// Configurações do banco extraídas do .env
 const dbConfig = {
     host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    port: parseInt(process.env.DB_PORT || '3306', 10),
     user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    password: process.env.DB_PASSWORD, // O dotenv oficial remove as aspas simples automaticamente
     database: process.env.DB_NAME,
     waitForConnections: true,
-    connectionLimit: 10, // Máximo de conexões simultâneas prontas para uso
+    connectionLimit: 10,
     queueLimit: 0
 };
 
-// Cria o pool de conexões
 const pool = mysql.createPool(dbConfig);
 
-// Exporta o pool para que os Models possam usá-lo
 export default pool;
