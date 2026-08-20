@@ -1,73 +1,98 @@
-import entregaModel from "../models/entregaModel.js";
+import axios from "axios";
+import EntregaModel from "../models/EntregaModel.js";
 
 class EntregaController {
+    // 1. CREATE (Criar Entrega com ViaCEP)
     async criar(req, res) {
         try {
-            const { cep, data_entrega, endereco_entrega } = req.body;
+            const { id_pedido, cep, numero, complemento, data_entrega } = req.body;
+            if (!id_pedido || !cep || !numero) return res.status(400).json({ erro: "Campos obrigatórios faltando." });
 
-            if (!cep || !data_entrega || !endereco_entrega) {
-                return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+            const cepLimpo = cep.replace(/\D/g, "");
+            if (cepLimpo.length !== 8) return res.status(400).json({ erro: "CEP inválido. Deve conter 8 dígitos." });
+
+            let respostaViaCep;
+            try {
+                respostaViaCep = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+            } catch (err) {
+                return res.status(404).json({ erro: "Falha ao conectar ao ViaCEP." });
             }
 
-            const novaEntrega = await entregaModel.criar(cep, data_entrega, endereco_entrega);
-            return res.status(201).json({
-                message: 'Entrega criada com sucesso',
-                Entrega: novaEntrega
-            });
+            if (respostaViaCep.data.erro) return res.status(404).json({ erro: "CEP não encontrado." });
+
+            const { logradouro, bairro, localidade: cidade, uf: estado } = respostaViaCep.data;
+            const dataFinalEntrega = data_entrega || new Date();
+
+            const novaEntrega = await EntregaModel.criar(id_pedido, cepLimpo, logradouro, numero, complemento || null, bairro, cidade, estado, dataFinalEntrega);
+            return res.status(201).json({ mensagem: "Entrega registrada!", dados: novaEntrega });
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ erro: error.message });
         }
     }
 
-    async listarTodos(req, res) {
+    // 2. READ ALL (Listar todas as entregas)
+    async listar(req, res) {
         try {
-            const entregas = await entregaModel.listarTodos();
-            return res.json({
-                message: 'Entregas listadas com sucesso',
-                Entregas: entregas
-            });
+            const entregas = await EntregaModel.listarTodos();
+            return res.status(200).json(entregas);
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ erro: error.message });
         }
     }
 
+    // 3. READ BY ID (Buscar entrega específica)
     async buscarPorId(req, res) {
         try {
             const { id } = req.params;
-            const entrega = await entregaModel.buscarPorID(id);
-
-            if (!entrega) {
-                return res.status(404).json({ error: 'Entrega não encontrada' });
-            }
-
-            return res.json(entrega);
+            const entrega = await EntregaModel.buscarPorID(id);
+            if (!entrega) return res.status(404).json({ erro: "Entrega não encontrada." });
+            return res.status(200).json(entrega);
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ erro: error.message });
         }
     }
 
+    // 4. UPDATE (Atualizar entrega e reconsultar ViaCEP se o CEP mudar)
     async atualizar(req, res) {
         try {
             const { id } = req.params;
-            const { cep, endereco_entrega, data_entrega } = req.body;
+            const { id_pedido, cep, numero, complemento, data_entrega } = req.body;
 
-            const entregaExistente = await entregaModel.buscarPorID(id);
+            if (!id_pedido || !cep || !numero) return res.status(400).json({ erro: "Campos obrigatórios faltando." });
 
-            if (!entregaExistente) {
-                return res.status(404).json({ error: 'Entrega não encontrada' });
+            const cepLimpo = cep.replace(/\D/g, "");
+            if (cepLimpo.length !== 8) return res.status(400).json({ erro: "CEP inválido." });
+
+            let respostaViaCep;
+            try {
+                respostaViaCep = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+            } catch (err) {
+                return res.status(404).json({ erro: "Falha ao consultar ViaCEP no update." });
             }
 
-            if (!cep || !endereco_entrega || !data_entrega) {
-                return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
-            }
+            if (respostaViaCep.data.erro) return res.status(404).json({ erro: "CEP não encontrado." });
 
-            const entregaAtualizada = await entregaModel.atualizar(id, cep, endereco_entrega, data_entrega);
-            return res.status(200).json({
-                message: "Entrega atualizada com sucesso",
-                Entrega: entregaAtualizada
-            });
+            const { logradouro, bairro, localidade: cidade, uf: estado } = respostaViaCep.data;
+            const dataFinalEntrega = data_entrega || new Date();
+
+            const entregaAtualizada = await EntregaModel.atualizar(id, id_pedido, cepLimpo, logradouro, numero, complemento || null, bairro, cidade, estado, dataFinalEntrega);
+            
+            if (!entregaAtualizada) return res.status(404).json({ erro: "Entrega não encontrada para atualizar." });
+            return res.status(200).json({ mensagem: "Entrega atualizada com sucesso!", dados: entregaAtualizada });
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ erro: error.message });
+        }
+    }
+
+    // 5. DELETE (Excluir registro de entrega)
+    async excluir(req, res) {
+        try {
+            const { id } = req.params;
+            const deletado = await EntregaModel.excluir(id);
+            if (!deletado) return res.status(404).json({ erro: "Entrega não encontrada para excluir." });
+            return res.status(200).json({ mensagem: "Entrega excluída com sucesso!" });
+        } catch (error) {
+            return res.status(500).json({ erro: error.message });
         }
     }
 }

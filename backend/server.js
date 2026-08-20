@@ -8,6 +8,8 @@ import produtoRoutes from './src/routes/produtoRoutes.js';
 import pedidoRoutes from './src/routes/pedidoRoutes.js';
 import administradorRoutes from './src/routes/administradorRoutes.js';
 
+
+
 const app = express();
 
 // Middlewares globais
@@ -15,11 +17,12 @@ app.use(cors());
 app.use(express.json());
 
 // Rotas da aplicação
+
 app.use("/administrador", administradorRoutes);
 app.use("/pedido", pedidoRoutes);
 app.use("/clientes", clienteRoutes); 
 app.use("/categoria",categoriaRoutes);
-app.use("/entrega",entregaRoutes);
+app.use("/", entregaRoutes);
 app.use("/produtos", produtoRoutes); 
 
 
