@@ -2,26 +2,29 @@ import PedidoModel from '../models/pedidoModel.js';
 
 const pedidoController = {
     // 1. CREATE - Criar o pedido completo com cliente e entrega
-    criar: async (req, res) => {
-        const { cliente, status, entrega, itens } = req.body;
+   criar: async (req, res) => {
+    const { cliente, status, entrega, itens, forma_pagamento } = req.body;
 
-        if (!cliente || !cliente.nome_cliente || !cliente.telefone_cliente) {
-            return res.status(400).json({ error: 'Nome e telefone do cliente são obrigatórios.' });
-        }
-        if (!entrega || !entrega.cep || !entrega.endereco_entrega) {
-            return res.status(400).json({ error: 'Dados de entrega são obrigatórios.' });
-        }
-        if (!itens || itens.length === 0) {
-            return res.status(400).json({ error: 'O pedido precisa conter pelo menos um produto.' });
-        }
+    if (!cliente || !cliente.nome_cliente || !cliente.telefone_cliente) {
+        return res.status(400).json({ error: 'Nome e telefone do cliente são obrigatórios.' });
+    }
+    if (!entrega || !entrega.cep || !entrega.logradouro || !entrega.numero || !entrega.bairro || !entrega.cidade || !entrega.estado) {
+        return res.status(400).json({ error: 'Dados de entrega são obrigatórios (cep, logradouro, numero, bairro, cidade, estado).' });
+    }
+    if (!itens || itens.length === 0) {
+        return res.status(400).json({ error: 'O pedido precisa conter pelo menos um produto.' });
+    }
+    if (!forma_pagamento) {
+        return res.status(400).json({ error: 'A forma de pagamento é obrigatória.' });
+    }
 
-        try {
-            const idPedido = await PedidoModel.criarPedidoCompleto(cliente, status, entrega, itens);
-            return res.status(201).json({ message: 'Pedido e entrega registrados com sucesso!', id_pedido: idPedido });
-        } catch (error) {
-            return res.status(500).json({ error: 'Erro interno ao processar o seu pedido.', detalhes: error.message });
-        }
-    },
+    try {
+        const idPedido = await PedidoModel.criarPedidoCompleto(cliente, status, entrega, itens, forma_pagamento);
+        return res.status(201).json({ message: 'Pedido e entrega registrados com sucesso!', id_pedido: idPedido });
+    } catch (error) {
+        return res.status(500).json({ error: 'Erro interno ao processar o seu pedido.', detalhes: error.message });
+    }
+},
 
     // 2. READ (Lista) - Buscar todos os pedidos para o painel do ADM
     listar: async (req, res) => {

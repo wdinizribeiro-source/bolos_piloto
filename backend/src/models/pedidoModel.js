@@ -2,7 +2,7 @@ import pool from '../database/database.js';
 
 const PedidoModel = {
     // 1. CREATE - Criar pedido completo com cliente e entrega
-    criarPedidoCompleto: async (dadosCliente, statusPedido, dadosEntrega, itens) => {
+    criarPedidoCompleto: async (dadosCliente, statusPedido, dadosEntrega, itens, formaPagamento) => {
         const conn = await pool.getConnection(); 
         try {
             await conn.beginTransaction();
@@ -20,19 +20,35 @@ const PedidoModel = {
                 idCliente = resCliente.insertId;
             }
 
-            // Insere o pedido
-            const sqlPedido = `INSERT INTO pedido (id_cliente, status) VALUES (?, ?)`;
-            const [resPedido] = await conn.query(sqlPedido, [idCliente, statusPedido || 'confirmado']);
+            // Calcula o total do pedido a partir dos itens (quantidade x preço unitário)
+            const totalPedido = itens.reduce((soma, item) => {
+                return soma + (item.quantidade * item.preco_unitario_ped);
+            }, 0);
+
+            // Insere o pedido (agora já com o total calculado)
+            const sqlPedido = `INSERT INTO pedido (id_cliente, status, total) VALUES (?, ?, ?)`;
+            const [resPedido] = await conn.query(sqlPedido, [idCliente, statusPedido || 'confirmado', totalPedido]);
             const idPedido = resPedido.insertId;
 
             // Insere a entrega vinculada ao id_pedido
-            const sqlEntrega = `INSERT INTO entrega (id_pedido, cep, endereco_entrega, data_entrega) VALUES (?, ?, ?, ?)`;
-            await conn.query(sqlEntrega, [
-                idPedido,
-                dadosEntrega.cep,
-                dadosEntrega.endereco_entrega,
-                dadosEntrega.data_entrega || null
-            ]);
+            // Insere a entrega vinculada ao id_pedido
+const sqlEntrega = `INSERT INTO entrega (id_pedido, cep, logradouro, numero, complemento, bairro, cidade, estado, data_entrega, observacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+await conn.query(sqlEntrega, [
+    idPedido,
+    dadosEntrega.cep,
+    dadosEntrega.logradouro,
+    dadosEntrega.numero,
+    dadosEntrega.complemento || null,
+    dadosEntrega.bairro,
+    dadosEntrega.cidade,
+    dadosEntrega.estado,
+    dadosEntrega.data_entrega || null,
+    dadosEntrega.observacao || null
+]);
+// Insere o registro de pagamento vinculado ao id_pedido
+const sqlPagamento = `INSERT INTO pagamento (id_pedido, forma_pagamento, status) VALUES (?, ?, ?)`;
+await conn.query(sqlPagamento, [idPedido, formaPagamento, 'pendente']);
+
 
             // Insere os itens do pedido
             const sqlItem = `INSERT INTO item_pedido (id_pedido, id_produto, quantidade, preco_unitario_ped) VALUES ?`;
@@ -57,7 +73,6 @@ const PedidoModel = {
     },
     
     // 2. READ (Lista) - Busca todos os pedidos detalhados para o ADM ver na tela
-        // 2. READ (Lista) - Busca todos os pedidos detalhados para o ADM ver na tela
     listarTodosParaAdm: async () => {
         const conn = await pool.getConnection();
         try {
@@ -69,7 +84,7 @@ const PedidoModel = {
                     ANY_VALUE(c.nome_cliente) AS nome_cliente, 
                     ANY_VALUE(c.telefone_cliente) AS telefone_cliente,
                     ANY_VALUE(e.cep) AS cep, 
-                    ANY_VALUE(e.endereco_entrega) AS endereco_entrega, 
+                    ANY_VALUE(e.logradouro) AS logradouro, 
                     ANY_VALUE(e.data_entrega) AS data_entrega,
                     GROUP_CONCAT(
                         CONCAT(pr.nome_produto, ' (x', ip.quantidade, ')') 
@@ -107,15 +122,44 @@ const PedidoModel = {
     buscarPorId: async (id_pedido) => {
         const conn = await pool.getConnection();
         try {
+            // 1ª consulta: dados do pedido, cliente e entrega
             const sql = `
-                SELECT p.*, c.nome_cliente, c.telefone_cliente, e.cep, e.endereco_entrega, e.data_entrega
-                FROM pedido p
-                INNER JOIN cliente c ON p.id_cliente = c.id_cliente
-                LEFT JOIN entrega e ON p.id_pedido = e.id_pedido
-                WHERE p.id_pedido = ?
+                SELECT p.*, c.nome_cliente, c.telefone_cliente, 
+                e.cep, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado, e.data_entrega, e.observacao,
+                pg.forma_pagamento
+            FROM pedido p
+            INNER JOIN cliente c ON p.id_cliente = c.id_cliente
+            LEFT JOIN entrega e ON p.id_pedido = e.id_pedido
+            LEFT JOIN pagamento pg ON p.id_pedido = pg.id_pedido
+            WHERE p.id_pedido = ?
             `;
             const [rows] = await conn.query(sql, [id_pedido]);
-            return rows.length > 0 ? rows[0] : null;
+
+            if (rows.length === 0) {
+                return null;
+            }
+
+            const pedido = rows[0];
+
+            // 2ª consulta: itens do pedido
+            const sqlItens = `
+                SELECT pr.nome_produto, ip.quantidade, ip.preco_unitario_ped
+                FROM item_pedido ip
+                INNER JOIN produto pr ON ip.id_produto = pr.id_produto
+                WHERE ip.id_pedido = ?
+            `;
+            const [itens] = await conn.query(sqlItens, [id_pedido]);
+
+            // Junta os itens dentro do objeto do pedido
+            pedido.itens = itens;
+
+            // Recalcula o total a partir dos itens, garantindo consistência
+            // (cobre pedidos antigos com total desatualizado ou zerado no banco)
+            pedido.total = itens.reduce((soma, item) => {
+                return soma + (item.quantidade * item.preco_unitario_ped);
+            }, 0);
+
+            return pedido;
         } finally {
             conn.release();
         }

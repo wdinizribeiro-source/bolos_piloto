@@ -2,6 +2,32 @@ import axios from "axios";
 import EntregaModel from "../models/EntregaModel.js";
 
 class EntregaController {
+
+    // Adicione este método dentro da classe EntregaController:
+async consultarCep(req, res) {
+    try {
+        const { cep } = req.params;
+        const cepLimpo = cep.replace(/\D/g, "");
+
+        if (cepLimpo.length !== 8) {
+            return res.status(400).json({ erro: "CEP inválido. Deve conter 8 dígitos." });
+        }
+
+        const respostaViaCep = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+
+        if (respostaViaCep.data.erro) {
+            return res.status(404).json({ erro: "CEP não encontrado." });
+        }
+
+        // Retorna apenas os dados de endereço necessários para o Front-end
+        const { logradouro, bairro, localidade: cidade, uf: estado } = respostaViaCep.data;
+        return res.status(200).json({ logradouro, bairro, cidade, estado });
+    } catch (error) {
+        console.error("Erro interno ao consultar o CEP:", error.message || error);
+        return res.status(500).json({ erro: "Falha ao conectar ao ViaCEP ou servidor." });
+    }
+}
+
     // 1. CREATE (Criar Entrega com ViaCEP)
     async criar(req, res) {
         try {

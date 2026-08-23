@@ -1,7 +1,9 @@
 import { Router } from "express";
-import EntregaController from "../controllers/EntregaController.js";
+import EntregaController from "../controllers/entregaController.js";
 
 const router = Router();
+
+router.get("/cep/:cep", EntregaController.consultarCep);
 
 router.post("/entregas", EntregaController.criar);
 router.get("/entregas", EntregaController.listar);
