@@ -47,16 +47,14 @@
                         <a class="nav-link" href="contato.html">Contato</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="Pedidos.html">Pedidos</a>
+                        <a class="nav-link" aria-current="page" href="pedidos.html">Pedidos</a>
                     </li>
                 </ul>
                 <nav class="navbar navbar-light bg-light px-3">
     
-                                    
-                    <div>
+                    <div data-bs-toggle="modal" data-bs-target="#modalCarrinho" style="cursor: pointer;">
                         🛒 Carrinho 
                         <span id="contadorCarrinho" class="badge bg-danger">0</span>
-                        
                     </div>
                 
                 </nav>
@@ -64,205 +62,15 @@
         </div>
     </nav>
 
-    <!-- cartão 1  bolos de pote-->
-
+    <!-- Produtos carregados dinamicamente a partir do banco de dados -->
+<div id="avisoLojaFechada" class="alert alert-warning text-center d-none" role="alert">
+    <!-- Esse texto será preenchido dinamicamente pelo JavaScript -->
+</div>
     <div class="container mt-4">
         <h2 class="text-center mb-4">O que vai saborear hoje ? Peça !</h2>
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-
-            <div class="col">
-                <div class="card h-100">
-                    <img src="imagens/Bolo_pote.jpg" class="card-img-top product-img" alt="Bolo de Pote 250 ml">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">Bolo de Pote</h5>
-
-                        <!-- Select estilizado -->
-                        <select id="produto1" class="form-select mb-3" onchange="atualizarValor(1)">
-                            <option value="" selected disabled hidden>Selecione</option>
-                            <option value="10">Chocolate</option>
-                            <option value="10">Chocolate com Ninho e Nutella</option>
-                            <option value="10">Chocolate com Morango</option>
-                            <option value="10">Chocolate com Maracujá</option>
-                            <option value="10">Cenoura com chocolate</option>
-                            <option value="10">Oreo</option>
-                            <option value="10">limão</option>
-                            <option value="10">Côco com Abacaxi</option>
-                            <option value="10">sensação</option>
-                        </select>
-
-                        <!-- Valor Unitário -->
-                        <label class="form-label">Valor Unitário</label>
-                        <input type="text" id="valor1" class="form-control mb-3" readonly>
-
-                        <!-- Quantidade -->
-                        <label class="form-label">Quantidade</label>
-                        <input type="number" id="quantidade1" class="form-control mb-3" min="0" value="0"
-                            onchange="atualizarTotal(1)">
-
-                        <!-- Total -->
-                        <label class="form-label">Total</label>
-                        <input type="text" id="total1" class="form-control mb-3" readonly>
-                    </div>
-
-                    <!-- inicio carrinho -->
-
-                    <button id="addToCart1" class="btn btn-success w-100" style="background-color: rgb(206, 169, 138);">Adicionar ao carrinho</button><br>
-                    
-
-
-                </div>
-            </div>
-            <!-- Cartão 2 Pavês -->
-
-            <div class="col">
-                <div class="card h-100">
-                    <img src="imagens/pave.jpg" class="card-img-top product-img" alt="Pavês">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3"> Pavê</h5>
-
-                        <!-- Select estilizado -->
-                        <select id="produto2" class="form-select mb-3" onchange="atualizarValor(2)">
-                            <option value="" selected disabled hidden>Selecione</option>
-                            <option value="12">Tradicional</option>
-                            <option value="12">Oreo</option>
-                            <option value="12">Maracujá</option>
-                            <option value="12">Maracujá com chocolate</option>
-                            <option value="12">limão</option>
-                            <option value="12">Limão com chocolate</option>
-                            <option value="12">Napolitano</option>
-                            <option value="12">Amendoim</option>
-                        </select>
-
-                        <!-- Valor Unitário -->
-                        <label class="form-label">Valor Unitário</label>
-                        <input type="text" id="valor2" class="form-control mb-3" readonly>
-
-                        <!-- Quantidade -->
-                        <label class="form-label">Quantidade</label>
-                        <input type="number" id="quantidade2" class="form-control mb-3" min="0" value="0"
-                            onchange="atualizarTotal(2)">
-
-                        <!-- Total -->
-                        <label class="form-label">Total</label>
-                        <input type="text" id="total2" class="form-control mb-3" readonly>
-                    </div>
-                    <button id="addToCart1" class="btn btn-success w-100" style="background-color: rgb(206, 169, 138);">Adicionar ao carrinho</button><br>
-
-
-                </div>
-
-            </div>
-
-
-            <!-- cartão 3 Bolos caseiros -->
-
-            <div class="col">
-                <div class="card h-100">
-                    <img src="imagens/bolo-caseiro.jpg" class="card-img-top product-img" alt="Bolo caseiro">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">Bolo Caseiro</h5>
-
-                        <!-- Select estilizado -->
-                        <select id="produto3" class="form-select mb-3" onchange="atualizarValor(3)">
-                            <option value="" selected disabled hidden>Selecione</option>
-                            <option value="15">Chocolate</option>
-                            <option value="15">Chocolate com Ninho e Nutella</option>
-                            <option value="15">Mesclado</option>
-                            <option value="15">Formigueiro</option>
-                            <option value="15">Cenoura com chocolate</option>
-                            <option value="15">Mesclado</option>
-                            <option value="15">Banana com doce de Leite</option>
-                            <option value="15">Côco Com Ninho</option>
-                            <option value="15">Aipim com Côco</option>
-                        </select>
-
-                        <!-- Valor Unitário -->
-                        <label class="form-label">Valor Unitário</label>
-                        <input type="text" id="valor3" class="form-control mb-3" readonly>
-
-                        <!-- Quantidade -->
-                        <label class="form-label">Quantidade</label>
-                        <input type="number" id="quantidade3" class="form-control mb-3" min="0" value="0"
-                            onchange="atualizarTotal(3)">
-
-                        <!-- Total -->
-                        <label class="form-label">Total</label>
-                        <input type="text" id="total3" class="form-control mb-3" readonly>
-                    </div>
-                    <button id="addToCart1" class="btn btn-success w-100" style="background-color: rgb(206, 169, 138);">Adicionar ao carrinho</button><br>
-
-                </div>
-            </div>
-            <!-- Doces Diversos -->
-
-            <div class="col">
-                <div class="card h-100">
-                    <img src="imagens/doces-divesos.jpg" class="card-img-top product-img" alt="Doces Diversos">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">Doces Diversos</h5>
-
-                        <!-- Select estilizado -->
-                        <select id="produto4" class="form-select mb-3" onchange="atualizarValor(4)">
-                            <option value="" selected disabled hidden>Selecione</option>
-                            <option value="100">Morangofe</option>
-                            <option value="200">Banoffe</option>
-                            <option value="300">Torta de limão</option>
-                            <option value="300">Copo da felicidade</option>
-                        </select>
-
-                        <!-- Valor Unitário -->
-                        <label class="form-label">Valor Unitário</label>
-                        <input type="text" id="valor4" class="form-control mb-3" readonly>
-
-                        <!-- Quantidade -->
-                        <label class="form-label">Quantidade</label>
-                        <input type="number" id="quantidade4" class="form-control mb-3" min="0" value="0"
-                            onchange="atualizarTotal(4)">
-
-                        <!-- Total -->
-                        <label class="form-label">Total</label>
-                        <input type="text" id="total4" class="form-control mb-3" readonly>
-                    </div>
-                    <button id="addToCart1" class="btn btn-success w-100" style="background-color: rgb(206, 169, 138);">Adicionar ao carrinho</button><br>
-
-
-                </div>
-            </div>
-                <!-- cartão de bebidas -->
-            
-            <div class="col">
-                <div class="card h-100">
-                    <img src="imagens/bebibas .png" class="card-img-top product-img" alt="Doces Diversos">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">Bebidas Diversas</h5>
-
-                        <!-- Select estilizado -->
-                        <select id="produto5" class="form-select mb-3" onchange="atualizarValor(5)">
-                            <option value="" selected disabled hidden>Selecione</option>
-                            <option value="100">coca cola 200 ml</option>
-                            <option value="200">fanta uva 200 ml</option>
-                            <option value="300">suco de laranja dell valle</option>
-                            <option value="300"> reb bull 350 ml</option>
-                        </select>
-
-                        <!-- Valor Unitário -->
-                        <label class="form-label">Valor Unitário</label>
-                        <input type="text" id="valor5" class="form-control mb-3" readonly>
-
-                        <!-- Quantidade -->
-                        <label class="form-label">Quantidade</label>
-                        <input type="number" id="quantidade5" class="form-control mb-3" min="0" value="0"
-                            onchange="atualizarTotal(5)">
-
-                        <!-- Total -->
-                        <label class="form-label">Total</label>
-                        <input type="text" id="total5" class="form-control mb-3" readonly>
-                    </div>
-                    <button id="addToCart1" class="btn btn-success w-100" style="background-color: rgb(206, 169, 138);">Adicionar ao carrinho</button><br>
-
-
-                </div>
-            </div>
+        <div class="row row-cols-1 row-cols-md-3 g-4" id="produtosContainer">
+            <!-- Os produtos serão carregados aqui via JavaScript -->
+            <p class="text-center text-muted">Carregando produtos...</p>
         </div>
     </div>
 
@@ -277,22 +85,77 @@
                 <div class="modal-body">
                     <div id="cartItems"></div>
                     <hr>
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between mb-3">
                         <strong>Total geral:</strong>
                         <strong id="cartTotal">R$ 0,00</strong>
+                    </div>
+
+                    <hr>
+                    <h6>Dados para entrega</h6>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Nome completo</label>
+                            <input type="text" id="checkoutNome" class="form-control" placeholder="Seu nome">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefone</label>
+                            <input type="text" id="checkoutTelefone" class="form-control" placeholder="(11) 99999-9999">
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-4">
+                            <label class="form-label">CEP</label>
+                            <input type="text" id="checkoutCep" class="form-control" placeholder="Somente números" maxlength="9">
+                            <small class="text-muted d-block mb-3">Não sabe o CEP deixa em branco, digite endereço manualmente.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Logradouro</label>
+                            <input type="text" id="checkoutLogradouro" class="form-control" placeholder="Rua, Av...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Número</label>
+                            <input type="text" id="checkoutNumero" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Complemento</label>
+                            <input type="text" id="checkoutComplemento" class="form-control" placeholder="Apto, bloco... (opcional)">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Bairro</label>
+                            <input type="text" id="checkoutBairro" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cidade</label>
+                            <input type="text" id="checkoutCidade" class="form-control">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">UF</label>
+                            <input type="text" id="checkoutEstado" class="form-control" maxlength="2" placeholder="SP">
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Ponto de referência / Observação (opcional)</label>
+                        <input type="text" id="checkoutObservacao" class="form-control" placeholder="Ex: Portão azul, tocar campainha">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Forma de pagamento</label>
+                        <select id="checkoutPagamento" class="form-select">
+                            <option value="" selected disabled>Selecione</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Cartão">Cartão (na entrega)</option>
+                            <option value="Pix">Pix</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button id="clearCart" type="button" class="btn btn-outline-danger">Limpar carrinho</button>
-                    <button type="button" class="btn btn-primary">Finalizar pedido</button>
+                    <button id="btnFinalizarPedido" type="button" class="btn btn-primary">Finalizar pedido</button>
                 </div>
             </div>
         </div>
     </div>
-
-
-
-
 
 
 <script src="script.js"></script>
@@ -322,16 +185,10 @@ class="text-light pt-4">
             <small>&copy; 2026 Erica bolos. Todos os direitos reservados.</small>
         </div>
 </footer>
-</script>
 
 <!-- Bootstrap JS (ESSENCIAL para o menu hamburguer funcionar) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
-
-
-
-
-
 
 </html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login - Admin</title>
+
+</head>
+<link rel="stylesheet" href="login.css">
+<body>
+
+    <!-- Tela de login -->
+    <div class="login-container">
+        <h2>Área Restrita Admin 🍰</h2>
+
+        <form id="form-login">
+            <div class="input-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" placeholder="Seu e-mail cadastrado" required>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" placeholder="Sua senha" required>
+            </div>
+
+            <button type="submit" class="btn-login">Entrar</button>
+        </form>
+
+        <div class="extra-links">
+            <a href="#"> Esqueceu sua senha ?</a>
+            <p id="mensagem-erro" class="d-none" style="color: red;"></p>
+        </div>
+    </div>
+
+<script src="login.js"></script>
+</body>
+</html>

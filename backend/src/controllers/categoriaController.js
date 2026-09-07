@@ -4,24 +4,28 @@ class CategoriaController {
 
     // Criar categoria
     async criar(req, res) {
-        try {
-            const { categoria } = req.body;
+    try {
+        const { categoria } = req.body;
 
-            if (!categoria) {
-                return res.status(400).json({ error: "Campo obrigatório" });
-            }
-
-            const novaCategoria = await categoriaModel.criar(categoria);
-
-            return res.status(201).json({
-                message: "Categoria criada com sucesso",
-                categoria: novaCategoria
-            });
-
-        } catch (error) {
-            return res.status(500).json({ error: error.message });
+        if (!categoria) {
+            return res.status(400).json({ error: "Campo obrigatório" });
         }
+
+        const novaCategoria = await categoriaModel.criar(categoria);
+
+        return res.status(201).json({
+            message: "Categoria criada com sucesso",
+            categoria: novaCategoria
+        });
+
+    } catch (error) {
+        // Erro específico do MySQL quando a constraint UNIQUE é violada
+        if (error.message.includes("Duplicate entry")) {
+            return res.status(409).json({ error: "Essa categoria já existe" });
+        }
+        return res.status(500).json({ error: error.message });
     }
+}
 
     // Listar todas
     async listarTodos(req, res) {

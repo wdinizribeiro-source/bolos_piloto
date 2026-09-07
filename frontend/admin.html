@@ -3,35 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Erica Bolos</title>
+    <!-- Bootstrap CSS -->
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+        crossorigin="anonymous">
 
-    <title>Login - Fábrica de Bolos</title>
 
+    <link rel="stylesheet" href="admin.css">
 </head>
-<link rel="stylesheet" href="admin.css">
-<body>
-
-    <!-- Tela de login -->
-    <div class="login-container">
-        <h2>Área do Cliente 🍰</h2>
-
-        <form>
-            <div class="input-group">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" placeholder="Seu e-mail cadastrado" required>
+<body class="bg-light">
+    <!-- Container onde os toasts vão aparecer -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+    <div id="toast-mensagem" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toast-texto">
+                <!-- A mensagem vai aparecer aqui -->
             </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
 
-            <div class="input-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" placeholder="Sua senha" required>
+    <!-- Navegação Simples do Painel -->
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">Erica Bolos - Painel de Controle</span>
+           <a href="#" id="btn-sair" class="btn btn-outline-light btn-sm">Sair</a>
+        </div>
+    </nav>
+<div class="d-flex align-items-center justify-content-center gap-3 my-3">
+    <span>Status da loja:</span>
+    <button id="btnToggleLoja" class="btn btn-success">Loja Aberta</button>
+</div>
+    <div class="container">
+        <h2 class="mb-4">Gerenciamento de Pedidos</h2>
+        <div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select id="filtroStatus" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="confirmado">Confirmado</option>
+                    <option value="preparando">Preparando</option>
+                    <option value="enviado">Enviado</option>
+                    <option value="finalizado">Finalizado</option>
+                    <option value="cancelado">Cancelado</option>
+                </select>
             </div>
-
-            <button type="submit" class="btn-login">Entrar</button>
-        </form>
-
-        <div class="extra-links">
-            <a href="#"> Esqueceu sua senha ?</a> 
+            <div class="col-md-3">
+                <label class="form-label">Cliente</label>
+                <input type="text" id="filtroCliente" class="form-control" placeholder="Buscar por nome...">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">De</label>
+                <input type="date" id="filtroDataInicio" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Até</label>
+                <input type="date" id="filtroDataFim" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <button id="btnLimparFiltros" class="btn btn-outline-secondary w-100">Limpar filtros</button>
+            </div>
+        </div>
+    </div>
+</div>
+        <!-- Tabela de Pedidos -->
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                       <thead class="table-dark">
+    <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Itens do Pedido</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Ações</th>
+        <th>Detalhes</th>
+    </tr>
+</thead>
+                        <tbody id="tabela-pedidos">
+                            <!-- O JavaScript vai colocar os pedidos do banco de dados aqui dentro de forma automática -->
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">Carregando pedidos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Modal Detalhe do Pedido (estilo cupom) -->
+    <div class="modal fade" id="modalDetalhePedido" tabindex="-1" aria-labelledby="modalDetalhePedidoLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="font-family: 'Courier New', monospace;">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalDetalhePedidoLabel">Pedido #<span id="cupomId"></span></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body" id="cupomBody">
+            <p class="text-center text-muted">Carregando...</p>
+          </div>
+          <div class="modal-footer">
+    <button type="button" class="btn btn-outline-primary" id="btnImprimirCupom">🖨️ Imprimir</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Gerenciamento de Produtos ===== -->
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Gerenciamento de Produtos</h2>
+            <button class="btn btn-primary" id="btnNovoProduto" data-bs-toggle="modal" data-bs-target="#modalProduto">
+                + Novo Produto
+            </button>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Categoria</label>
+                <select id="filtroCategoriaProduto" class="form-select">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Nome do produto</label>
+                <input type="text" id="filtroNomeProduto" class="form-control" placeholder="Buscar por nome...">
+            </div>
+            <div class="col-md-3">
+                <button id="btnLimparFiltrosProdutos" class="btn btn-outline-secondary w-100">Limpar filtros</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Categoria</th>
+                                <th>Preço</th>
+                                <th>Estoque</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-produtos">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">Carregando produtos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Criar/Editar Produto -->
+    <div class="modal fade" id="modalProduto" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalProdutoTitulo">Novo Produto</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formProduto">
+              <input type="hidden" id="produtoId">
+
+              <div class="mb-3">
+                <label class="form-label">Nome do produto</label>
+                <input type="text" class="form-control" id="produtoNome" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Categoria</label>
+                <select class="form-select" id="produtoCategoria" required>
+                  <option value="">Carregando categorias...</option>
+                </select>
+
+                <!-- Caixa que só aparece quando o admin escolhe "Criar nova categoria" -->
+                <div id="novaCategoriaBox" class="d-none mt-2">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="novaCategoriaNome" placeholder="Nome da nova categoria">
+                        <button class="btn btn-outline-success" type="button" id="btnCriarCategoria">Criar</button>
+                        <button class="btn btn-outline-secondary" type="button" id="btnCancelarCategoria">Cancelar</button>
+                    </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Preço (R$)</label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="produtoPreco" required>
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Estoque</label>
+                  <input type="number" step="1" min="0" class="form-control" id="produtoEstoque" required>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="btnSalvarProduto">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script><!-- Script de Integração -->
+    <script src="admin.js"></script>
 </body>
 </html>

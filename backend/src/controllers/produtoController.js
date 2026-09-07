@@ -6,9 +6,14 @@ class ProdutoController {
         try {
             const { nome_produto, preco_unit_produto, quantidade_estoque, id_categoria } = req.body;
 
-            if (!nome_produto || !preco_unit_produto || !quantidade_estoque || !id_categoria) {
-                return res.status(400).json({ error: "Campos obrigatórios" });
-            }
+           if (
+    !nome_produto ||
+    preco_unit_produto === undefined || preco_unit_produto === null ||
+    quantidade_estoque === undefined || quantidade_estoque === null ||
+    !id_categoria
+) {
+    return res.status(400).json({ error: "Campos obrigatórios" });
+}
 
             const novoProduto = await produtoModel.criar(nome_produto, preco_unit_produto, quantidade_estoque, id_categoria);
 
@@ -80,10 +85,14 @@ class ProdutoController {
             const { id } = req.params;
             const { nome_produto, preco_unit_produto, quantidade_estoque, id_categoria } = req.body;
 
-            if (!nome_produto || !preco_unit_produto || !quantidade_estoque || !id_categoria) {
-                return res.status(400).json({ error: "Campos obrigatórios" });
-            }
-
+           if (
+    !nome_produto ||
+    preco_unit_produto === undefined || preco_unit_produto === null ||
+    quantidade_estoque === undefined || quantidade_estoque === null ||
+    !id_categoria
+) {
+    return res.status(400).json({ error: "Campos obrigatórios" });
+}
             const atualizado = await produtoModel.atualizar(id, nome_produto, preco_unit_produto, quantidade_estoque, id_categoria);
 
             if (!atualizado) {
@@ -99,24 +108,24 @@ class ProdutoController {
         }
     }
     // Deletar produto
-    async deletar(req, res) {
-        try {
-            const { id } = req.params;
+   async deletar(req, res) {
+    try {
+        const { id } = req.params;
 
-            const deletado = await produtoModel.deletar(id);
+        const desativado = await produtoModel.desativar(id);
 
-            if (!deletado) {
-                return res.status(404).json({ error: "Produto não encontrado" });
-            }
-
-            return res.json({
-                message: "Produto deletado com sucesso"
-            });
-
-        } catch (error) {
-            return res.status(500).json({ error: error.message });
+        if (!desativado) {
+            return res.status(404).json({ error: "Produto não encontrado" });
         }
+
+        return res.json({
+            message: "Produto removido com sucesso"
+        });
+
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
     }
+}
 }
 
 export default new ProdutoController();

@@ -1,4 +1,7 @@
+
 import PedidoModel from '../models/pedidoModel.js';
+import { normalizarNome } from '../utils/validate/normalizarNome.js';
+import { normalizarTelefone } from '../utils/validate/normalizarTelefone.js';
 
 const pedidoController = {
     // 1. CREATE - Criar o pedido completo com cliente e entrega
@@ -8,18 +11,38 @@ const pedidoController = {
     if (!cliente || !cliente.nome_cliente || !cliente.telefone_cliente) {
         return res.status(400).json({ error: 'Nome e telefone do cliente são obrigatórios.' });
     }
-    if (!entrega || !entrega.cep || !entrega.logradouro || !entrega.numero || !entrega.bairro || !entrega.cidade || !entrega.estado) {
-        return res.status(400).json({ error: 'Dados de entrega são obrigatórios (cep, logradouro, numero, bairro, cidade, estado).' });
-    }
+    if (!entrega || !entrega.logradouro || !entrega.numero || !entrega.bairro || !entrega.cidade || !entrega.estado) {
+    return res.status(400).json({ error: 'Dados de entrega são obrigatórios (logradouro, numero, bairro, cidade, estado).' });
+}
+
+// CEP é opcional, mas se vier preenchido, precisa ter o formato correto
+if (entrega.cep && entrega.cep.length !== 8) {
+    return res.status(400).json({ error: 'CEP inválido. Deve conter 8 dígitos ou ser deixado em branco.' });
+}
+
+
+
     if (!itens || itens.length === 0) {
         return res.status(400).json({ error: 'O pedido precisa conter pelo menos um produto.' });
     }
     if (!forma_pagamento) {
         return res.status(400).json({ error: 'A forma de pagamento é obrigatória.' });
     }
+// Normalização: só acontece depois que sabemos que os campos existem
+const telefoneNormalizado = normalizarTelefone(cliente.telefone_cliente);
+
+if (!telefoneNormalizado) {
+    return res.status(400).json({ error: "Telefone inválido. Verifique o número informado." });
+}
+
+const clienteNormalizado = {
+    ...cliente,
+    nome_cliente: normalizarNome(cliente.nome_cliente),
+    telefone_cliente: telefoneNormalizado
+};
 
     try {
-        const idPedido = await PedidoModel.criarPedidoCompleto(cliente, status, entrega, itens, forma_pagamento);
+        const idPedido = await PedidoModel.criarPedidoCompleto(clienteNormalizado, status, entrega, itens, forma_pagamento);
         return res.status(201).json({ message: 'Pedido e entrega registrados com sucesso!', id_pedido: idPedido });
     } catch (error) {
         return res.status(500).json({ error: 'Erro interno ao processar o seu pedido.', detalhes: error.message });
