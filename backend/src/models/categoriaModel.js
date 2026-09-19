@@ -2,16 +2,17 @@ import pool from '../database/database.js';
 
 class CategoriaModel {
     // Criar categoria
-    async criar(categoria) {
+    async criar(categoria, imagem_url = null, imagem_public_id = null) {
         try {
             const sql = `
-                INSERT INTO categoria (categoria) 
-                VALUES (?)
+                INSERT INTO categoria (categoria, imagem_url, imagem_public_id) 
+                VALUES (?, ?, ?)
             `;
-            const [resultado] = await pool.query(sql, [categoria]);
+            const [resultado] = await pool.query(sql, [categoria, imagem_url, imagem_public_id]);
             return {
                 id_categoria: resultado.insertId,
-                categoria
+                categoria,
+                imagem_url
             };
         } catch (error) {
             throw new Error('Erro ao salvar categoria no banco: ' + error.message);
@@ -21,7 +22,7 @@ class CategoriaModel {
     // Listar todas
     async listarTodos() {
         try {
-            const sql = 'SELECT id_categoria, categoria FROM categoria';
+            const sql = 'SELECT id_categoria, categoria, imagem_url FROM categoria';
             const [linhas] = await pool.query(sql);
             return linhas;
         } catch (error) {
@@ -33,7 +34,7 @@ class CategoriaModel {
     async buscarPorNome(categoria) {
         try {
             const sql = `
-                SELECT id_categoria, categoria 
+                SELECT id_categoria, categoria, imagem_url
                 FROM categoria
                 WHERE categoria LIKE CONCAT('%', ?, '%')
             `;
@@ -44,30 +45,29 @@ class CategoriaModel {
         }
     }
 
-    
     async listarPorId(id) {
         try {
             const sql = `
-                SELECT id_categoria, categoria
+                SELECT id_categoria, categoria, imagem_url, imagem_public_id
                 FROM categoria
                 WHERE id_categoria = ?
             `;
             const [linhas] = await pool.query(sql, [id]);
-            return linhas;
+            return linhas[0]; // objeto único, igual ao padrão do produtoModel
         } catch (error) {
             throw new Error('Erro ao buscar categoria por ID: ' + error.message);
         }
     }
 
     // Atualizar categoria
-    async atualizar(id, categoria) {
+    async atualizar(id, categoria, imagem_url, imagem_public_id) {
         try {
             const sql = `
                 UPDATE categoria
-                SET categoria = ?
+                SET categoria = ?, imagem_url = ?, imagem_public_id = ?
                 WHERE id_categoria = ?
             `;
-            const [resultado] = await pool.query(sql, [categoria, id]);
+            const [resultado] = await pool.query(sql, [categoria, imagem_url, imagem_public_id, id]);
             return resultado.affectedRows > 0;
         } catch (error) {
             throw new Error('Erro ao atualizar categoria: ' + error.message);

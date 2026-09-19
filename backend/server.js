@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import clienteRoutes from './src/routes/ClienteRoutes.js'; 
 import categoriaRoutes from './src/routes/categoriaRoutes.js';
 import entregaRoutes from './src/routes/entregaRoutes.js'; 
@@ -13,9 +15,15 @@ import configLojaRoutes from './src/routes/configLojaRoutes.js';
 
 const app = express();
 
+app.use(helmet()); // Adiciona cabeçalhos de segurança HTTP
+
 // Middlewares globais
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5500',
+    credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 // Rotas da aplicação
 app.use("/configLoja", configLojaRoutes);

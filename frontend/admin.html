@@ -203,7 +203,13 @@
                     </div>
                 </div>
               </div>
-
+                            <div class="mb-3">
+                <label class="form-label">Imagem do produto</label>
+                <input type="file" class="form-control" id="produtoImagem" accept="image/*">
+                <div class="mt-2">
+                  <img id="produtoImagemPreview" src="" alt="Prévia da imagem" class="img-thumbnail d-none" style="max-height: 150px;">
+                </div>
+              </div>
               <div class="row">
                 <div class="col-6 mb-3">
                   <label class="form-label">Preço (R$)</label>
@@ -223,7 +229,71 @@
         </div>
       </div>
     </div>
+    <!-- ===== Gerenciamento de Categorias ===== -->
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Gerenciamento de Categorias</h2>
+        <button class="btn btn-primary" id="btnNovaCategoria" data-bs-toggle="modal" data-bs-target="#modalCategoria">
+            + Nova Categoria
+        </button>
+    </div>
 
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Imagem</th>
+                            <th>Nome</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-categorias">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">Carregando categorias...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Criar/Editar Categoria -->
+<div class="modal fade" id="modalCategoria" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalCategoriaTitulo">Nova Categoria</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formCategoria">
+          <input type="hidden" id="categoriaId">
+
+          <div class="mb-3">
+            <label class="form-label">Nome da categoria</label>
+            <input type="text" class="form-control" id="categoriaNome" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Imagem da categoria</label>
+            <input type="file" class="form-control" id="categoriaImagem" accept="image/*">
+            <div class="mt-2">
+              <img id="categoriaImagemPreview" src="" alt="Prévia da imagem" class="img-thumbnail d-none" style="max-height: 150px;">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarCategoria">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script><!-- Script de Integração -->
     <script src="admin.js"></script>
 </body>

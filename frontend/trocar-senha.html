@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trocar Senha - Admin</title>
+</head>
+<link rel="stylesheet" href="login.css">
+<body>
+
+    <div class="login-container">
+        <h2>Defina sua nova senha 🔑</h2>
+        <p style="font-size: 0.9rem; color: #555;">
+            Este é seu primeiro acesso. Por segurança, defina uma nova senha antes de continuar.
+        </p>
+
+        <form id="form-trocar-senha">
+            <div class="input-group">
+                <label for="senhaAtual">Senha atual (temporária)</label>
+                <input type="password" id="senhaAtual" placeholder="Senha que você recebeu" required>
+            </div>
+
+            <div class="input-group">
+                <label for="novaSenha">Nova senha</label>
+                <input type="password" id="novaSenha" placeholder="Mínimo 8 caracteres" required minlength="8">
+            </div>
+
+            <div class="input-group">
+                <label for="confirmarSenha">Confirmar nova senha</label>
+                <input type="password" id="confirmarSenha" placeholder="Repita a nova senha" required minlength="8">
+            </div>
+
+            <button type="submit" class="btn-login">Salvar nova senha</button>
+        </form>
+
+        <div class="extra-links">
+            <p id="mensagem-erro" class="d-none" style="color: red;"></p>
+        </div>
+    </div>
+
+<script src="trocar-senha.js"></script>
+</body>
+</html>

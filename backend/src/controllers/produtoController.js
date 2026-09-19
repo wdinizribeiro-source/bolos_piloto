@@ -1,21 +1,34 @@
 import produtoModel from "../models/produtoModel.js";
+import { uploadImagem, deletarImagem } from "../utils/cloudinaryUpload.js";
 
 class ProdutoController {
     // Criar produto
-    async criar(req, res) {
+     async criar(req, res) {
         try {
             const { nome_produto, preco_unit_produto, quantidade_estoque, id_categoria } = req.body;
 
-           if (
-    !nome_produto ||
-    preco_unit_produto === undefined || preco_unit_produto === null ||
-    quantidade_estoque === undefined || quantidade_estoque === null ||
-    !id_categoria
-) {
-    return res.status(400).json({ error: "Campos obrigatórios" });
-}
+            if (
+                !nome_produto ||
+                preco_unit_produto === undefined || preco_unit_produto === null ||
+                quantidade_estoque === undefined || quantidade_estoque === null ||
+                !id_categoria
+            ) {
+                return res.status(400).json({ error: "Campos obrigatórios" });
+            }
 
-            const novoProduto = await produtoModel.criar(nome_produto, preco_unit_produto, quantidade_estoque, id_categoria);
+            let imagem_url = null;
+            let imagem_public_id = null;
+
+            if (req.file) {
+                const resultadoUpload = await uploadImagem(req.file.buffer, "clientes/erica-bolos/produtos");
+                imagem_url = resultadoUpload.secure_url;
+                imagem_public_id = resultadoUpload.public_id;
+            }
+
+            const novoProduto = await produtoModel.criar(
+                nome_produto, preco_unit_produto, quantidade_estoque, id_categoria,
+                imagem_url, imagem_public_id
+            );
 
             return res.status(201).json({
                 message: "Produto criado com sucesso",
@@ -26,6 +39,7 @@ class ProdutoController {
             return res.status(500).json({ error: error.message });
         }
     }
+
 
     // Listar todos os produtos
     async listarTodos(req, res) {
@@ -85,23 +99,40 @@ class ProdutoController {
             const { id } = req.params;
             const { nome_produto, preco_unit_produto, quantidade_estoque, id_categoria } = req.body;
 
-           if (
-    !nome_produto ||
-    preco_unit_produto === undefined || preco_unit_produto === null ||
-    quantidade_estoque === undefined || quantidade_estoque === null ||
-    !id_categoria
-) {
-    return res.status(400).json({ error: "Campos obrigatórios" });
-}
-            const atualizado = await produtoModel.atualizar(id, nome_produto, preco_unit_produto, quantidade_estoque, id_categoria);
+            if (
+                !nome_produto ||
+                preco_unit_produto === undefined || preco_unit_produto === null ||
+                quantidade_estoque === undefined || quantidade_estoque === null ||
+                !id_categoria
+            ) {
+                return res.status(400).json({ error: "Campos obrigatórios" });
+            }
+
+            const produtoAtual = await produtoModel.listarPorId(id);
+            if (!produtoAtual) {
+                return res.status(404).json({ error: "Produto não encontrado" });
+            }
+
+            let imagem_url = produtoAtual.imagem_url;
+            let imagem_public_id = produtoAtual.imagem_public_id;
+
+            if (req.file) {
+              const resultadoUpload = await uploadImagem(req.file.buffer, "clientes/erica-bolos/produtos");
+await deletarImagem(produtoAtual.imagem_public_id);
+                imagem_url = resultadoUpload.secure_url;
+                imagem_public_id = resultadoUpload.public_id;
+            }
+
+            const atualizado = await produtoModel.atualizar(
+                id, nome_produto, preco_unit_produto, quantidade_estoque, id_categoria,
+                imagem_url, imagem_public_id
+            );
 
             if (!atualizado) {
                 return res.status(404).json({ error: "Produto não encontrado" });
             }
 
-            return res.json({
-                message: "Produto atualizado com sucesso"
-            });
+            return res.json({ message: "Produto atualizado com sucesso" });
 
         } catch (error) {
             return res.status(500).json({ error: error.message });

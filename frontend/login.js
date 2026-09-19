@@ -11,19 +11,26 @@ document.getElementById("form-login").addEventListener("submit", async function 
         const resposta = await fetch(URL_LOGIN, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include", // Inclui cookies na requisição
             body: JSON.stringify({ email, senha })
         });
 
         const dados = await resposta.json();
 
         if (!resposta.ok) {
-            throw new Error(dados.message || "Erro ao fazer login");
+            throw new Error(dados.error || "Erro ao fazer login");
         }
 
-        localStorage.setItem("token", dados.token);
+        
         localStorage.setItem("admin", JSON.stringify(dados.admin));
 
-        window.location.href = "admin.html";
+        if (dados.precisaTrocarSenha) {
+            window.location.href = "trocar-senha.html";
+        }else {
+            window.location.href = "admin.html";
+        }
+
+       
 
     } catch (erro) {
         console.error("Erro no login:", erro);

@@ -1,6 +1,7 @@
 const URL_API_PRODUTOS = "http://localhost:8000/produtos";
 const URL_API_PEDIDO = "http://localhost:8000/pedido";
 const URL_API_ENTREGAS = "http://localhost:8000/entregas";
+const URL_API_CATEGORIAS = "http://localhost:8000/categoria";
 
 let produtosDisponiveis = [];
 let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
@@ -118,16 +119,30 @@ async function verificarStatusLoja() {
     }
 }
 // ===== Carrega os produtos reais do banco e monta os cards por categoria =====
+// ===== Carrega os produtos reais do banco e monta os cards por categoria =====
 async function carregarProdutos() {
     const container = document.getElementById("produtosContainer");
     if (!container) return;
 
     try {
-        const resposta = await fetch(URL_API_PRODUTOS);
-        if (!resposta.ok) throw new Error(`Erro no servidor: ${resposta.status}`);
+        const [respostaProdutos, respostaCategorias] = await Promise.all([
+            fetch(URL_API_PRODUTOS),
+            fetch(URL_API_CATEGORIAS)
+        ]);
 
-        const dados = await resposta.json();
-        produtosDisponiveis = dados.produtos || [];
+        if (!respostaProdutos.ok) throw new Error(`Erro no servidor: ${respostaProdutos.status}`);
+
+        const dadosProdutos = await respostaProdutos.json();
+        produtosDisponiveis = dadosProdutos.produtos || [];
+
+        // Mapa "nome da categoria" -> imagem_url, pra exibir uma foto fixa por categoria
+        const imagensPorCategoria = {};
+        if (respostaCategorias.ok) {
+            const dadosCategorias = await respostaCategorias.json();
+            (dadosCategorias.categorias || []).forEach(cat => {
+                imagensPorCategoria[cat.categoria] = cat.imagem_url;
+            });
+        }
 
         const categorias = {};
         produtosDisponiveis.forEach(produto => {
@@ -142,6 +157,7 @@ async function carregarProdutos() {
         Object.keys(categorias).forEach((nomeCategoria, index) => {
             const produtosDaCategoria = categorias[nomeCategoria];
             const cardId = `cat${index}`;
+            const imagemCategoria = imagensPorCategoria[nomeCategoria];
 
             const optionsHtml = produtosDaCategoria.map(p =>
                 `<option value="${p.id_produto}" data-preco="${p.preco_unit_produto}">${p.nome_produto}</option>`
@@ -150,6 +166,10 @@ async function carregarProdutos() {
             const cardHtml = `
                 <div class="col">
                     <div class="card h-100">
+                        ${imagemCategoria
+                            ? `<img src="${imagemCategoria}" class="card-img-top" alt="${nomeCategoria}" style="height: 180px; object-fit: cover;">`
+                            : ""
+                        }
                         <div class="card-body">
                             <h5 class="card-title mb-3">${nomeCategoria}</h5>
 
@@ -202,7 +222,6 @@ async function carregarProdutos() {
         container.innerHTML = `<p class="text-center text-danger">Erro ao carregar produtos. Verifique a conexão com o servidor.</p>`;
     }
 }
-
 function atualizarValorETotal(cardId) {
     const select = document.getElementById(`produto-${cardId}`);
     const valorInput = document.getElementById(`valor-${cardId}`);

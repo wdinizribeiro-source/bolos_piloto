@@ -1,15 +1,16 @@
-// Proteção de acesso: verifica se existe um token salvo
-const tokenSalvo = localStorage.getItem("token");
 
-if (!tokenSalvo) {
-   mostrarMensagem("Você precisa fazer login para acessar esta página.", "erro");
-    window.location.href = "login.html";
-}
-
-// Lógica do botão Sair
-document.getElementById("btn-sair").addEventListener("click", function (e) {
+document.getElementById("btn-sair").addEventListener("click", async function (e) {
     e.preventDefault();
-    localStorage.removeItem("token");
+
+    try {
+        await fetch("http://localhost:8000/administrador/logout", {
+            method: "POST",
+            credentials: "include"
+        });
+    } catch (erro) {
+        console.error("Erro ao encerrar sessão no servidor:", erro);
+    }
+
     localStorage.removeItem("admin");
     window.location.href = "login.html";
 });
@@ -34,18 +35,16 @@ function mostrarMensagem(texto, tipo = "sucesso") {
 let pedidosCompletos = []; // guarda a lista inteira, sem filtro, na memória
 
 async function carregarPedidos() {
-    const URL_API = "http://localhost:8000/pedido/adm/listar";
+   const URL_API = "http://localhost:8000/pedido/adm/listar";
 
     try {
-        const token = localStorage.getItem("token");
         const resposta = await fetch(URL_API, {
             method: "GET",
+            credentials: "include",
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Content-Type": "application/json"
             }
         });
-
         if (!resposta.ok) {
             throw new Error(`Erro no servidor: ${resposta.status}`);
         }
@@ -158,14 +157,14 @@ document.getElementById("btnLimparFiltros").addEventListener("click", function (
 });
 
 async function atualizarStatusPedido(id, novoStatus) {
-    const token = localStorage.getItem("token");
-
-    try {
+    
+    
+      try {
         const resposta = await fetch(`http://localhost:8000/pedido/adm/${id}/status`, {
             method: "PUT",
+            credentials: "include",
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({ status: novoStatus })
         });
@@ -204,7 +203,7 @@ document.getElementById("tabela-pedidos").addEventListener("change", function (e
 
 // Busca o detalhe completo do pedido e mostra no modal
 async function abrirDetalhePedido(id) {
-    const token = localStorage.getItem("token");
+    
     const modalBody = document.getElementById("cupomBody");
     document.getElementById("cupomId").textContent = id;
 
@@ -216,9 +215,9 @@ async function abrirDetalhePedido(id) {
     try {
         const resposta = await fetch(`http://localhost:8000/pedido/adm/${id}`, {
             method: "GET",
+            credentials: "include",
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Content-Type": "application/json"
             }
         });
 
@@ -347,14 +346,12 @@ async function alternarStatusLoja() {
     const estaAberta = btn.textContent.includes("Aberta");
     const novoStatus = !estaAberta;
 
-    const token = localStorage.getItem("token");
-
     try {
         const resposta = await fetch("http://localhost:8000/configLoja/status", {
             method: "PUT",
+            credentials: "include",
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
                 loja_aberta: novoStatus,
@@ -485,50 +482,58 @@ async function salvarProduto() {
     const preco_unit_produto = document.getElementById("produtoPreco").value;
     const quantidade_estoque = document.getElementById("produtoEstoque").value;
     const id_categoria = document.getElementById("produtoCategoria").value;
+    const arquivoImagem = document.getElementById("produtoImagem").files[0];
 
     if (!nome_produto || !preco_unit_produto || !quantidade_estoque || !id_categoria) {
         mostrarMensagem("Preencha todos os campos.", "erro");
         return;
     }
 
-    const corpo = { nome_produto, preco_unit_produto, quantidade_estoque, id_categoria };
-    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("nome_produto", nome_produto);
+    formData.append("preco_unit_produto", preco_unit_produto);
+    formData.append("quantidade_estoque", quantidade_estoque);
+    formData.append("id_categoria", id_categoria);
+    if (arquivoImagem) {
+        formData.append("imagem", arquivoImagem);
+    }
 
-    // Se tem ID salvo no campo escondido, é edição (PUT). Se não tem, é criação (POST).
     const metodo = id ? "PUT" : "POST";
     const url = id ? `http://localhost:8000/produtos/${id}` : "http://localhost:8000/produtos";
+
+    const btnSalvar = document.getElementById("btnSalvarProduto");
+    const textoOriginal = btnSalvar.textContent;
+    btnSalvar.disabled = true;
+    btnSalvar.textContent = "Salvando...";
 
     try {
         const resposta = await fetch(url, {
             method: metodo,
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(corpo)
+            credentials: "include",
+            body: formData
         });
 
         const dados = await resposta.json();
 
         if (!resposta.ok) {
-
             throw new Error(dados.error || "Erro ao salvar produto");
         }
 
         mostrarMensagem(id ? "Produto atualizado com sucesso!" : "Produto criado com sucesso!", "sucesso");
 
-       bootstrap.Modal.getInstance(document.getElementById("modalProduto")).hide();
-carregarProdutos(document.getElementById("filtroNomeProduto").value.trim());
+        bootstrap.Modal.getInstance(document.getElementById("modalProduto")).hide();
+        carregarProdutos(document.getElementById("filtroNomeProduto").value.trim());
 
     } catch (erro) {
         console.error("Erro ao salvar produto:", erro);
         mostrarMensagem("Erro ao salvar produto: " + erro.message, "erro");
+    } finally {
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = textoOriginal;
     }
 }
 
 async function abrirEdicaoProduto(id) {
-    const token = localStorage.getItem("token");
-
     try {
         const resposta = await fetch(`http://localhost:8000/produtos/${id}`);
         const produto = await resposta.json();
@@ -538,6 +543,16 @@ async function abrirEdicaoProduto(id) {
         document.getElementById("produtoPreco").value = produto.preco_unit_produto;
         document.getElementById("produtoEstoque").value = produto.quantidade_estoque;
         document.getElementById("produtoCategoria").value = produto.id_categoria;
+
+        document.getElementById("produtoImagem").value = "";
+        const preview = document.getElementById("produtoImagemPreview");
+        if (produto.imagem_url) {
+            preview.src = produto.imagem_url;
+            preview.classList.remove("d-none");
+        } else {
+            preview.src = "";
+            preview.classList.add("d-none");
+        }
 
         document.getElementById("modalProdutoTitulo").textContent = "Editar Produto";
 
@@ -551,17 +566,14 @@ async function abrirEdicaoProduto(id) {
 }
 
 async function excluirProduto(id) {
+   
     const confirmar = confirm(`Tem certeza que deseja excluir o produto #${id}?`);
     if (!confirmar) return;
-
-    const token = localStorage.getItem("token");
 
     try {
         const resposta = await fetch(`http://localhost:8000/produtos/${id}`, {
             method: "DELETE",
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
+            credentials: "include"
         });
 
         const dados = await resposta.json();
@@ -595,19 +607,233 @@ document.getElementById("tabela-produtos").addEventListener("click", function (e
 // Botão "Salvar" do modal
 document.getElementById("btnSalvarProduto").addEventListener("click", salvarProduto);
 
-// Quando o botão "+ Novo Produto" é clicado, garante que o formulário
-// esteja limpo e o título correto (caso o modal tenha ficado com dados de uma edição anterior)
+document.getElementById("produtoImagem").addEventListener("change", function () {
+    const arquivo = this.files[0];
+    const preview = document.getElementById("produtoImagemPreview");
+
+    if (arquivo) {
+        const leitor = new FileReader();
+        leitor.onload = function (e) {
+            preview.src = e.target.result;
+            preview.classList.remove("d-none");
+        };
+        leitor.readAsDataURL(arquivo);
+    } else {
+        preview.src = "";
+        preview.classList.add("d-none");
+    }
+});
 document.getElementById("btnNovoProduto").addEventListener("click", function () {
     document.getElementById("formProduto").reset();
     document.getElementById("produtoId").value = "";
     document.getElementById("modalProdutoTitulo").textContent = "Novo Produto";
-});
 
+    const preview = document.getElementById("produtoImagemPreview");
+    preview.src = "";
+    preview.classList.add("d-none");
+});
 // Carregamento inicial: assim que a página abre, busca categorias e produtos
 document.addEventListener("DOMContentLoaded", function () {
     carregarCategorias();
     carregarProdutos();
 });
+function renderizarTabelaCategorias(lista) {
+    const tabela = document.getElementById("tabela-categorias");
+    tabela.innerHTML = "";
+
+    if (lista.length === 0) {
+        tabela.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Nenhuma categoria encontrada.</td></tr>`;
+        return;
+    }
+
+    lista.forEach(categoria => {
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+    <td>${categoria.id_categoria}</td>
+    <td>
+        ${categoria.imagem_url
+            ? `<img src="${categoria.imagem_url}" alt="${escapeHtml(categoria.categoria)}" style="height: 50px; width: 50px; object-fit: cover; border-radius: 4px;">`
+            : `<span class="text-muted">Sem imagem</span>`
+        }
+    </td>
+    <td>${escapeHtml(categoria.categoria)}</td>
+    <td>
+        <button class="btn btn-sm btn-outline-secondary btn-editar-categoria" data-id="${categoria.id_categoria}">✏️ Editar</button>
+        <button class="btn btn-sm btn-outline-danger btn-excluir-categoria" data-id="${categoria.id_categoria}">🗑️ Excluir</button>
+    </td>
+`;
+        tabela.appendChild(linha);
+    });
+}
+
+async function carregarListaCategorias() {
+    const tabela = document.getElementById("tabela-categorias");
+    tabela.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Carregando categorias...</td></tr>`;
+
+    try {
+        const resposta = await fetch("http://localhost:8000/categoria");
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(dados.error || "Erro ao carregar categorias");
+        }
+
+        renderizarTabelaCategorias(dados.categorias || []);
+
+    } catch (erro) {
+        console.error("Erro ao carregar categorias:", erro);
+        tabela.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Erro ao carregar categorias.</td></tr>`;
+    }
+}
+
+async function salvarCategoria() {
+    const id = document.getElementById("categoriaId").value;
+    const categoria = document.getElementById("categoriaNome").value.trim();
+    const arquivoImagem = document.getElementById("categoriaImagem").files[0];
+
+    if (!categoria) {
+        mostrarMensagem("Preencha o nome da categoria.", "erro");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("categoria", categoria);
+    if (arquivoImagem) {
+        formData.append("imagem", arquivoImagem);
+    }
+
+    const metodo = id ? "PUT" : "POST";
+    const url = id ? `http://localhost:8000/categoria/${id}` : "http://localhost:8000/categoria";
+
+    const btnSalvar = document.getElementById("btnSalvarCategoria");
+    const textoOriginal = btnSalvar.textContent;
+    btnSalvar.disabled = true;
+    btnSalvar.textContent = "Salvando...";
+
+    try {
+        const resposta = await fetch(url, {
+            method: metodo,
+            credentials: "include",
+            body: formData
+        });
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(dados.error || "Erro ao salvar categoria");
+        }
+
+        mostrarMensagem(id ? "Categoria atualizada com sucesso!" : "Categoria criada com sucesso!", "sucesso");
+
+        bootstrap.Modal.getInstance(document.getElementById("modalCategoria")).hide();
+        carregarListaCategorias();
+        carregarCategorias();
+
+    } catch (erro) {
+        console.error("Erro ao salvar categoria:", erro);
+        mostrarMensagem("Erro ao salvar categoria: " + erro.message, "erro");
+    } finally {
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = textoOriginal;
+    }
+}
+
+async function abrirEdicaoCategoria(id) {
+    try {
+        const resposta = await fetch(`http://localhost:8000/categoria/${id}`);
+        const categoria = await resposta.json();
+
+        document.getElementById("categoriaId").value = categoria.id_categoria;
+        document.getElementById("categoriaNome").value = categoria.categoria;
+
+        document.getElementById("categoriaImagem").value = "";
+        const preview = document.getElementById("categoriaImagemPreview");
+        if (categoria.imagem_url) {
+            preview.src = categoria.imagem_url;
+            preview.classList.remove("d-none");
+        } else {
+            preview.src = "";
+            preview.classList.add("d-none");
+        }
+
+        document.getElementById("modalCategoriaTitulo").textContent = "Editar Categoria";
+
+        const modal = new bootstrap.Modal(document.getElementById("modalCategoria"));
+        modal.show();
+
+    } catch (erro) {
+        console.error("Erro ao buscar categoria:", erro);
+        mostrarMensagem("Erro ao carregar dados da categoria.", "erro");
+    }
+}
+async function excluirCategoria(id) {
+    const confirmar = confirm(`Tem certeza que deseja excluir esta categoria? Os produtos associados a ela podem ficar sem categoria.`);
+    if (!confirmar) return;
+
+    try {
+        const resposta = await fetch(`http://localhost:8000/categoria/${id}`, {
+            method: "DELETE",
+            credentials: "include"
+        });
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(dados.error || "Erro ao excluir categoria");
+        }
+
+        mostrarMensagem("Categoria excluída com sucesso!", "sucesso");
+        carregarListaCategorias();
+        carregarCategorias();
+
+    } catch (erro) {
+        console.error("Erro ao excluir categoria:", erro);
+        mostrarMensagem("Erro ao excluir categoria: " + erro.message, "erro");
+    }
+}
+document.getElementById("tabela-categorias").addEventListener("click", function (e) {
+    const botaoEditar = e.target.closest(".btn-editar-categoria");
+    const botaoExcluir = e.target.closest(".btn-excluir-categoria");
+
+    if (botaoEditar) {
+        abrirEdicaoCategoria(botaoEditar.dataset.id);
+    }
+    if (botaoExcluir) {
+        excluirCategoria(botaoExcluir.dataset.id);
+    }
+});
+
+document.getElementById("btnSalvarCategoria").addEventListener("click", salvarCategoria);
+
+document.getElementById("btnNovaCategoria").addEventListener("click", function () {
+    document.getElementById("formCategoria").reset();
+    document.getElementById("categoriaId").value = "";
+    document.getElementById("modalCategoriaTitulo").textContent = "Nova Categoria";
+
+    const preview = document.getElementById("categoriaImagemPreview");
+    preview.src = "";
+    preview.classList.add("d-none");
+});
+
+document.getElementById("categoriaImagem").addEventListener("change", function () {
+    const arquivo = this.files[0];
+    const preview = document.getElementById("categoriaImagemPreview");
+
+    if (arquivo) {
+        const leitor = new FileReader();
+        leitor.onload = function (e) {
+            preview.src = e.target.result;
+            preview.classList.remove("d-none");
+        };
+        leitor.readAsDataURL(arquivo);
+    } else {
+        preview.src = "";
+        preview.classList.add("d-none");
+    }
+});
+
+document.addEventListener("DOMContentLoaded", carregarListaCategorias);
+
 
 // ===== Atalho de criar categoria dentro do formulário de produto =====
 
@@ -629,14 +855,13 @@ async function criarCategoriaRapida() {
         return;
     }
 
-    const token = localStorage.getItem("token");
-
-    try {
+  
+        try {
         const resposta = await fetch("http://localhost:8000/categoria", {
             method: "POST",
+            credentials: "include",
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({ categoria: nome })
         });
