@@ -1,3 +1,14 @@
+/* ===== Trava de segurança contra rolagem horizontal da página inteira =====
+   A tabela de pedidos tem várias colunas e é naturalmente mais larga que
+   telas pequenas — isso é esperado, e o .table-responsive do Bootstrap já
+   permite rolar ELA sozinha, sem afetar o resto da página.
+   Sem esta regra, essa largura extra "vazava" e fazia a página inteira
+   (navbar, filtros, tudo) ficar mais larga que a tela e arrastar junto. */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 /* ===== Estilo de impressão do cupom ===== */
 @media print {
     /* Esconde tudo da página, exceto o conteúdo do cupom */
