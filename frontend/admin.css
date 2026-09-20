@@ -1,9 +1,6 @@
 /* ===== Trava de segurança contra rolagem horizontal da página inteira =====
-   A tabela de pedidos tem várias colunas e é naturalmente mais larga que
-   telas pequenas — isso é esperado, e o .table-responsive do Bootstrap já
-   permite rolar ELA sozinha, sem afetar o resto da página.
-   Sem esta regra, essa largura extra "vazava" e fazia a página inteira
-   (navbar, filtros, tudo) ficar mais larga que a tela e arrastar junto. */
+   Evita que qualquer elemento mais largo que a tela faça a página inteira
+   (navbar, filtros, tudo) ficar mais larga e arrastar junto. */
 html, body {
     max-width: 100%;
     overflow-x: hidden;
@@ -38,5 +35,102 @@ html, body {
     .modal-content, .modal-header, .modal-footer {
         border: none !important;
         box-shadow: none !important;
+    }
+}
+
+/* ===== Tabelas do admin no celular: cada linha vira um cartão =====
+   Vale para as 3 tabelas que têm a classe "tabela-cards" no HTML
+   (pedidos, produtos e categorias). Sem rolagem lateral: tudo de um
+   registro (inclusive status e botões de ação) aparece de uma vez. */
+@media (max-width: 768px) {
+
+    /* Esconde o cabeçalho; cada célula ganha seu próprio rótulo (abaixo) */
+    .tabela-cards thead {
+        display: none;
+    }
+
+    .tabela-cards,
+    .tabela-cards tbody {
+        display: block;
+        width: 100%;
+    }
+
+    /* Cada linha (<tr>) vira um cartão */
+    .tabela-cards tr {
+        display: block;
+        margin: .75rem;
+        padding: .5rem .75rem;
+        border: 1px solid #dee2e6;
+        border-radius: .5rem;
+        background: #fff;
+    }
+
+    /* Cada célula: rótulo à esquerda, valor à direita */
+    .tabela-cards td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        border: 0;
+        padding: .35rem 0;
+        text-align: right;
+        white-space: normal;
+        font-size: .875rem;
+    }
+
+    .tabela-cards td::before {
+        font-weight: 600;
+        color: #6c757d;
+        text-align: left;
+        flex-shrink: 0;
+    }
+
+    /* Rótulos: tabela de pedidos */
+    #tabela-pedidos td:nth-child(1)::before { content: "ID"; }
+    #tabela-pedidos td:nth-child(2)::before { content: "Cliente"; }
+    #tabela-pedidos td:nth-child(3)::before { content: "Itens"; }
+    #tabela-pedidos td:nth-child(4)::before { content: "Total"; }
+    #tabela-pedidos td:nth-child(5)::before { content: "Status"; }
+    #tabela-pedidos td:nth-child(6)::before { content: "Ações"; }
+    #tabela-pedidos td:nth-child(7)::before { content: "Detalhes"; }
+
+    /* Rótulos: tabela de produtos */
+    #tabela-produtos td:nth-child(1)::before { content: "ID"; }
+    #tabela-produtos td:nth-child(2)::before { content: "Nome"; }
+    #tabela-produtos td:nth-child(3)::before { content: "Categoria"; }
+    #tabela-produtos td:nth-child(4)::before { content: "Preço"; }
+    #tabela-produtos td:nth-child(5)::before { content: "Estoque"; }
+    #tabela-produtos td:nth-child(6)::before { content: "Ações"; }
+
+    /* Rótulos: tabela de categorias */
+    #tabela-categorias td:nth-child(1)::before { content: "ID"; }
+    #tabela-categorias td:nth-child(2)::before { content: "Imagem"; }
+    #tabela-categorias td:nth-child(3)::before { content: "Nome"; }
+    #tabela-categorias td:nth-child(4)::before { content: "Ações"; }
+
+    /* Linhas de aviso ("Carregando...", "Nenhum pedido...", "Erro...")
+       ficam centralizadas e sem rótulo. O !important é necessário porque
+       os seletores de rótulo acima usam id e têm mais peso. */
+    .tabela-cards td[colspan] {
+        display: block;
+        text-align: center;
+    }
+
+    .tabela-cards td[colspan]::before {
+        content: none !important;
+    }
+
+    /* O select de status não estica a largura toda dentro do cartão */
+    .tabela-cards .select-status {
+        width: auto;
+        min-width: 140px;
+    }
+
+    /* Botões Editar/Excluir lado a lado, quebrando linha se faltar espaço */
+    #tabela-produtos td:last-child,
+    #tabela-categorias td:last-child {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: .5rem;
     }
 }
