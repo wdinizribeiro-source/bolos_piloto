@@ -1,10 +1,18 @@
-const URL_API_PRODUTOS = "http://localhost:8000/produtos";
-const URL_API_PEDIDO = "http://localhost:8000/pedido";
-const URL_API_ENTREGAS = "http://localhost:8000/entregas";
-const URL_API_CATEGORIAS = "http://localhost:8000/categoria";
+const URL_API_PRODUTOS = `${API_URL}/produtos`;
+const URL_API_PEDIDO = `${API_URL}/pedido`;
+const URL_API_ENTREGAS = `${API_URL}/entregas`;
+const URL_API_CATEGORIAS = `${API_URL}/categoria`;
 
 let produtosDisponiveis = [];
 let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+let dadosPedidoPendente = null; // guarda o pedido montado, aguardando confirmação no modal
+
+// Escapa HTML pra evitar XSS ao exibir dados digitados pelo cliente no resumo do pedido
+function escapeHtml(valor) {
+    const div = document.createElement("div");
+    div.textContent = valor ?? "";
+    return div.innerHTML;
+}
 
 // ===== Verifica se a loja está aberta ou fechada =====
 let lojaAberta = true; // valor padrão, será atualizado pela API
@@ -14,7 +22,7 @@ async function carregarStatusLoja() {
     if (!btn) return;
 
     try {
-        const resposta = await fetch("http://localhost:8000/configLoja/status");
+        const resposta = await fetch(`${API_URL}/configLoja/status`);
         const dados = await resposta.json();
         const aberta = Boolean(dados.loja_aberta);
 
@@ -51,7 +59,7 @@ async function alternarStatusLoja() {
     const token = localStorage.getItem("token"); // ajuste a chave se você salva o token com outro nome
 
     try {
-        const resposta = await fetch("http://localhost:8000/configLoja/status", {
+        const resposta = await fetch(`${API_URL}/configLoja/status`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -91,7 +99,7 @@ async function verificarStatusLoja() {
     if (!aviso) return;
 
     try {
-        const resposta = await fetch("http://localhost:8000/configLoja/status");
+        const resposta = await fetch(`${API_URL}/configLoja/status`);
         if (!resposta.ok) throw new Error("Erro ao consultar status da loja.");
 
         const dados = await resposta.json();
@@ -187,7 +195,7 @@ async function carregarProdutos() {
                             <label class="form-label">Total</label>
                             <input type="text" id="total-${cardId}" class="form-control mb-3" readonly>
                         </div>
-                        <button id="addToCart-${cardId}" class="btn btn-success w-100" style="background-color: rgb(206, 169, 138);">Adicionar ao carrinho</button>
+                        <button id="addToCart-${cardId}" class="btn btn-add-carrinho w-100">Adicionar ao carrinho</button>
                         <br>
                     </div>
                 </div>
@@ -325,7 +333,7 @@ function inicializarBuscaCep() {
         if (cep.length === 8) {
             try {
                 // Chama a rota que funcionou perfeitamente no Thunder Client
-                const resposta = await fetch(`http://localhost:8000/cep/${cep}`);
+                const resposta = await fetch(`${API_URL}/cep/${cep}`);
                 
                 if (resposta.ok) {
                     const dados = await resposta.json();
@@ -387,13 +395,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const btnFinalizar = document.getElementById("btnFinalizarPedido");
     if (btnFinalizar) {
-        btnFinalizar.addEventListener("click", finalizarPedido);
+        btnFinalizar.addEventListener("click", abrirConfirmacaoPedido);
+    }
+
+    const btnConfirmarEnviar = document.getElementById("btnConfirmarEnviarPedido");
+    if (btnConfirmarEnviar) {
+        btnConfirmarEnviar.addEventListener("click", enviarPedidoConfirmado);
     }
 });
 
 
-// ===== Finalizar pedido =====
-async function finalizarPedido() {
+// ===== Etapa 1: validar os campos e abrir o modal de confirmação =====
+function abrirConfirmacaoPedido() {
     if (!lojaAberta) {
         alert("🚫 A loja está fechada no momento. Não é possível finalizar pedidos.");
         return;
@@ -416,24 +429,24 @@ async function finalizarPedido() {
     const pagamento = document.getElementById("checkoutPagamento")?.value;
     const observacao = document.getElementById("checkoutObservacao")?.value.trim();
 
-    
     // Remove traços do CEP
     const cepLimpo = cepRaw.replace(/\D/g, "");
     const cepValido = cepLimpo === "" || cepLimpo.length === 8;
 
     // Validação básica do lado do cliente
     if (!cepValido) {
-    alert("CEP inválido. Digite os 8 números ou deixe o campo em branco.");
-    return;
-}
+        alert("CEP inválido. Digite os 8 números ou deixe o campo em branco.");
+        return;
+    }
 
-if (!nome || !telefone || !logradouro || !numero || !bairro || !cidade || !estado || !pagamento) {
-    alert("Por favor, preencha todos os campos obrigatórios corretamente.");
-    return;
-}
+    if (!nome || !telefone || !logradouro || !numero || !bairro || !cidade || !estado || !pagamento) {
+        alert("Por favor, preencha todos os campos obrigatórios corretamente.");
+        return;
+    }
 
     // ESTRUTURAÇÃO EXATA: Alinhada perfeitamente com as exigências do PedidoController
-    const dadosPedido = {
+    // Guardado em variável global, só é enviado de fato quando o cliente confirmar no modal
+    dadosPedidoPendente = {
         cliente: {
             nome_cliente: nome,
             telefone_cliente: telefone
@@ -453,7 +466,75 @@ if (!nome || !telefone || !logradouro || !numero || !bairro || !cidade || !estad
         itens: carrinho
     };
 
-    console.log("Enviando payload estruturado:", dadosPedido);
+    // Monta o resumo visual e abre o modal de confirmação (por cima do modal do carrinho)
+    const body = document.getElementById("confirmacaoPedidoBody");
+    body.innerHTML = montarResumoConfirmacao(dadosPedidoPendente);
+
+    const modal = new bootstrap.Modal(document.getElementById("modalConfirmarPedido"));
+    modal.show();
+}
+
+// Monta o HTML do resumo mostrado no modal de confirmação
+function montarResumoConfirmacao(dados) {
+    const linhasItens = dados.itens.map(item => {
+        const subtotal = (item.quantidade * item.preco_unitario_ped).toFixed(2);
+        return `
+            <tr>
+                <td>${item.quantidade}x</td>
+                <td>${escapeHtml(item.nome_produto)}</td>
+                <td class="text-end">R$ ${subtotal}</td>
+            </tr>
+        `;
+    }).join("");
+
+    const totalGeral = dados.itens.reduce(
+        (soma, item) => soma + (item.quantidade * item.preco_unitario_ped),
+        0
+    );
+
+    return `
+        <div class="mb-2">
+            <strong>Cliente:</strong> ${escapeHtml(dados.cliente.nome_cliente)}<br>
+            <strong>Telefone:</strong> ${escapeHtml(dados.cliente.telefone_cliente)}
+        </div>
+        <div class="mb-2">
+            <strong>Endereço de entrega:</strong><br>
+            ${escapeHtml(dados.entrega.logradouro)}, ${escapeHtml(dados.entrega.numero)}
+            ${dados.entrega.complemento ? "- " + escapeHtml(dados.entrega.complemento) : ""}<br>
+            ${escapeHtml(dados.entrega.bairro)} - ${escapeHtml(dados.entrega.cidade)}/${escapeHtml(dados.entrega.estado)}
+            ${dados.entrega.cep ? `<br>CEP: ${escapeHtml(dados.entrega.cep)}` : ""}
+            ${dados.entrega.observacao ? `<br><strong>Obs.:</strong> ${escapeHtml(dados.entrega.observacao)}` : ""}
+        </div>
+        <div class="mb-2">
+            <strong>Forma de pagamento:</strong> ${escapeHtml(dados.forma_pagamento)}
+        </div>
+        <hr>
+        <table class="table table-sm">
+            <thead>
+                <tr><th>Qtd</th><th>Item</th><th class="text-end">Subtotal</th></tr>
+            </thead>
+            <tbody>
+                ${linhasItens}
+            </tbody>
+        </table>
+        <hr>
+        <div class="d-flex justify-content-between">
+            <strong>TOTAL:</strong>
+            <strong>R$ ${totalGeral.toFixed(2)}</strong>
+        </div>
+    `;
+}
+
+// ===== Etapa 2: envio de fato, só chamado quando o cliente clica em "Confirmar e enviar" =====
+async function enviarPedidoConfirmado() {
+    if (!dadosPedidoPendente) return;
+
+    const btnConfirmar = document.getElementById("btnConfirmarEnviarPedido");
+    const textoOriginal = btnConfirmar.textContent;
+    btnConfirmar.disabled = true;
+    btnConfirmar.textContent = "Enviando...";
+
+    console.log("Enviando payload estruturado:", dadosPedidoPendente);
 
     try {
         const resposta = await fetch(URL_API_PEDIDO, {
@@ -461,10 +542,14 @@ if (!nome || !telefone || !logradouro || !numero || !bairro || !cidade || !estad
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(dadosPedido)
+            body: JSON.stringify(dadosPedidoPendente)
         });
 
         if (resposta.ok) {
+            const modalConfirmarEl = document.getElementById("modalConfirmarPedido");
+            const modalConfirmarInstance = bootstrap.Modal.getInstance(modalConfirmarEl);
+            if (modalConfirmarInstance) modalConfirmarInstance.hide();
+
             alert("🎉 Pedido finalizado e enviado com sucesso!");
             carrinho = [];
             salvarCarrinho();
@@ -482,12 +567,12 @@ if (!nome || !telefone || !logradouro || !numero || !bairro || !cidade || !estad
             atualizarContador();
             renderizarCarrinho();
 
-            const modalEl = document.getElementById("modalCarrinho");
-    const modalInstance = bootstrap.Modal.getInstance(modalEl);
-    if (modalInstance) modalInstance.hide();
-        }
-            // window.location.reload(); // Atualiza a tela limpando o fluxo
-        else {
+            const modalCarrinhoEl = document.getElementById("modalCarrinho");
+            const modalCarrinhoInstance = bootstrap.Modal.getInstance(modalCarrinhoEl);
+            if (modalCarrinhoInstance) modalCarrinhoInstance.hide();
+
+            dadosPedidoPendente = null;
+        } else {
             const erroServer = await resposta.json();
             // Exibe a mensagem de validação real enviada pela API (ex: erro.error)
             alert(`Erro no servidor: ${erroServer.error || "Não foi possível cadastrar seu pedido."}`);
@@ -495,7 +580,8 @@ if (!nome || !telefone || !logradouro || !numero || !bairro || !cidade || !estad
     } catch (erro) {
         console.error("Erro na comunicação com a API de Pedidos:", erro);
         alert("Falha de conexão com o servidor ao tentar finalizar o pedido.");
+    } finally {
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = textoOriginal;
     }
 }
-
-

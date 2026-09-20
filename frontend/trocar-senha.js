@@ -13,7 +13,7 @@ document.getElementById("form-trocar-senha").addEventListener("submit", async fu
     }
 
     try {
-        const resposta = await fetch("http://localhost:8000/administrador/trocar-senha", {
+        const resposta = await fetch(`${API_URL}/administrador/trocar-senha`, {
             method: "PUT",
             credentials: "include",
             headers: { "Content-Type": "application/json" },

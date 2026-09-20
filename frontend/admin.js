@@ -1,9 +1,10 @@
 
+
 document.getElementById("btn-sair").addEventListener("click", async function (e) {
     e.preventDefault();
 
     try {
-        await fetch("http://localhost:8000/administrador/logout", {
+        await fetch(`${API_URL}/administrador/logout`, {
             method: "POST",
             credentials: "include"
         });
@@ -35,7 +36,7 @@ function mostrarMensagem(texto, tipo = "sucesso") {
 let pedidosCompletos = []; // guarda a lista inteira, sem filtro, na memória
 
 async function carregarPedidos() {
-   const URL_API = "http://localhost:8000/pedido/adm/listar";
+   const URL_API = `${API_URL}/pedido/adm/listar`;
 
     try {
         const resposta = await fetch(URL_API, {
@@ -160,7 +161,7 @@ async function atualizarStatusPedido(id, novoStatus) {
     
     
       try {
-        const resposta = await fetch(`http://localhost:8000/pedido/adm/${id}/status`, {
+        const resposta = await fetch(`${API_URL}/pedido/adm/${id}/status`, {
             method: "PUT",
             credentials: "include",
             headers: {
@@ -213,7 +214,7 @@ async function abrirDetalhePedido(id) {
     modal.show();
 
     try {
-        const resposta = await fetch(`http://localhost:8000/pedido/adm/${id}`, {
+        const resposta = await fetch(`${API_URL}/pedido/adm/${id}`, {
             method: "GET",
             credentials: "include",
             headers: {
@@ -314,7 +315,7 @@ async function carregarStatusLoja() {
     if (!btn) return;
 
     try {
-        const resposta = await fetch("http://localhost:8000/configLoja/status");
+        const resposta = await fetch(`${API_URL}/configLoja/status`);
         const dados = await resposta.json();
         const aberta = Boolean(dados.loja_aberta);
 
@@ -347,7 +348,7 @@ async function alternarStatusLoja() {
     const novoStatus = !estaAberta;
 
     try {
-        const resposta = await fetch("http://localhost:8000/configLoja/status", {
+        const resposta = await fetch(`${API_URL}/configLoja/status`, {
             method: "PUT",
             credentials: "include",
             headers: {
@@ -385,7 +386,7 @@ async function carregarCategorias() {
     const selectFiltro = document.getElementById("filtroCategoriaProduto");
 
     try {
-        const resposta = await fetch("http://localhost:8000/categoria");
+        const resposta = await fetch(`${API_URL}/categoria`);
         const dados = await resposta.json();
         const categorias = dados.categorias || [];
 
@@ -419,8 +420,8 @@ let produtosCompletos = []; // guarda a última lista vinda da API (já filtrada
 async function carregarProdutos(nomeBusca = "") {
     const tabela = document.getElementById("tabela-produtos");
     const URL_API = nomeBusca
-        ? `http://localhost:8000/produtos/buscar?nome_produto=${encodeURIComponent(nomeBusca)}`
-        : "http://localhost:8000/produtos";
+        ? `${API_URL}/produtos/buscar?nome_produto=${encodeURIComponent(nomeBusca)}`
+        : `${API_URL}/produtos`;
 
     tabela.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Carregando produtos...</td></tr>`;
 
@@ -499,7 +500,7 @@ async function salvarProduto() {
     }
 
     const metodo = id ? "PUT" : "POST";
-    const url = id ? `http://localhost:8000/produtos/${id}` : "http://localhost:8000/produtos";
+    const url = id ? `${API_URL}/produtos/${id}` : `${API_URL}/produtos`;
 
     const btnSalvar = document.getElementById("btnSalvarProduto");
     const textoOriginal = btnSalvar.textContent;
@@ -535,7 +536,7 @@ async function salvarProduto() {
 
 async function abrirEdicaoProduto(id) {
     try {
-        const resposta = await fetch(`http://localhost:8000/produtos/${id}`);
+        const resposta = await fetch(`${API_URL}/produtos/${id}`);
         const produto = await resposta.json();
 
         document.getElementById("produtoId").value = produto.id_produto;
@@ -571,7 +572,7 @@ async function excluirProduto(id) {
     if (!confirmar) return;
 
     try {
-        const resposta = await fetch(`http://localhost:8000/produtos/${id}`, {
+        const resposta = await fetch(`${API_URL}/produtos/${id}`, {
             method: "DELETE",
             credentials: "include"
         });
@@ -671,7 +672,7 @@ async function carregarListaCategorias() {
     tabela.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Carregando categorias...</td></tr>`;
 
     try {
-        const resposta = await fetch("http://localhost:8000/categoria");
+        const resposta = await fetch(`${API_URL}/categoria`);
         const dados = await resposta.json();
 
         if (!resposta.ok) {
@@ -703,7 +704,7 @@ async function salvarCategoria() {
     }
 
     const metodo = id ? "PUT" : "POST";
-    const url = id ? `http://localhost:8000/categoria/${id}` : "http://localhost:8000/categoria";
+    const url = id ? `${API_URL}/categoria/${id}` : `${API_URL}/categoria`;
 
     const btnSalvar = document.getElementById("btnSalvarCategoria");
     const textoOriginal = btnSalvar.textContent;
@@ -740,7 +741,7 @@ async function salvarCategoria() {
 
 async function abrirEdicaoCategoria(id) {
     try {
-        const resposta = await fetch(`http://localhost:8000/categoria/${id}`);
+        const resposta = await fetch(`${API_URL}/categoria/${id}`);
         const categoria = await resposta.json();
 
         document.getElementById("categoriaId").value = categoria.id_categoria;
@@ -771,7 +772,7 @@ async function excluirCategoria(id) {
     if (!confirmar) return;
 
     try {
-        const resposta = await fetch(`http://localhost:8000/categoria/${id}`, {
+        const resposta = await fetch(`${API_URL}/categoria/${id}`, {
             method: "DELETE",
             credentials: "include"
         });
@@ -857,7 +858,7 @@ async function criarCategoriaRapida() {
 
   
         try {
-        const resposta = await fetch("http://localhost:8000/categoria", {
+        const resposta = await fetch(`${API_URL}/categoria`, {
             method: "POST",
             credentials: "include",
             headers: {

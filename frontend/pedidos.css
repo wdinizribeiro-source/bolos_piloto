@@ -25,6 +25,22 @@ div.card {
     
 }
 
+/* Botão "Adicionar ao carrinho" nos cards de produto.
+   Antes a cor estava fixa via style inline no HTML gerado pelo JS,
+   o que impedia o hover funcionar. Agora está centralizado aqui. */
+.btn-add-carrinho {
+    background-color: rgb(206, 169, 138);
+    border-color: rgb(206, 169, 138);
+    color: #1f1f1f;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-add-carrinho:hover {
+    background-color: rgb(184, 146, 115);
+    border-color: rgb(184, 146, 115);
+    color: #1f1f1f;
+}
+
 #addToCart1 {
     background-color: #b78263 !important;
     border-color: #a86e51 !important;
@@ -52,4 +68,3 @@ div.card {
         color: #c28c61;
         ;
     }
-

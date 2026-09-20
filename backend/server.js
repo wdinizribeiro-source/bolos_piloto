@@ -19,7 +19,7 @@ app.use(helmet()); // Adiciona cabeçalhos de segurança HTTP
 
 // Middlewares globais
 app.use(cors({
-    origin: 'http://localhost:5500',
+    origin: process.env.FRONTEND_URL || 'http://localhost:5500',
     credentials: true
 }));
 app.use(express.json());

@@ -1,4 +1,4 @@
-const URL_LOGIN = "http://localhost:8000/administrador/login";
+const URL_LOGIN = `${API_URL}/administrador/login`;
 
 document.getElementById("form-login").addEventListener("submit", async function (e) {
     e.preventDefault();
