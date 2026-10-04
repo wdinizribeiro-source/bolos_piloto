@@ -32,11 +32,19 @@ document.addEventListener("DOMContentLoaded", function () {
         btnLimpar.addEventListener("click", function () {
             const confirmar = confirm("Tem certeza que deseja limpar o carrinho?");
             if (confirmar) {
-                carrinho = [];
-                salvarCarrinho();
-                atualizarContador();
-                renderizarCarrinho();
-            }
+carrinho = [];
+salvarCarrinho();
+atualizarContador();
+renderizarCarrinho();
+ 
+const modal = bootstrap.Modal.getInstance(
+document.getElementById("modalCarrinho")
+);
+ 
+if (modal) {
+modal.hide();
+}
+}
         });
     }
 
