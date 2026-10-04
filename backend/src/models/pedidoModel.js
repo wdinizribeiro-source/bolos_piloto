@@ -79,13 +79,13 @@ await conn.query(sqlPagamento, [idPedido, formaPagamento, 'pendente']);
             const sql = `
                 SELECT 
                     p.id_pedido, 
-                    ANY_VALUE(p.status) AS status, 
-                    ANY_VALUE(p.data_pedido) AS data_pedido,
-                    ANY_VALUE(c.nome_cliente) AS nome_cliente, 
-                    ANY_VALUE(c.telefone_cliente) AS telefone_cliente,
-                    ANY_VALUE(e.cep) AS cep, 
-                    ANY_VALUE(e.logradouro) AS logradouro, 
-                    ANY_VALUE(e.data_entrega) AS data_entrega,
+                    MAX(p.status) AS status, 
+                    MAX(p.data_pedido) AS data_pedido,
+                    MAX(c.nome_cliente) AS nome_cliente, 
+                    MAX(c.telefone_cliente) AS telefone_cliente,
+                    MAX(e.cep) AS cep, 
+                    MAX(e.logradouro) AS logradouro, 
+                    MAX(e.data_entrega) AS data_entrega,
                     GROUP_CONCAT(
                         CONCAT(pr.nome_produto, ' (x', ip.quantidade, ')') 
                         SEPARATOR ', '
