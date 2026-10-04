@@ -5,6 +5,6 @@
 
 const API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
     ? "http://localhost:8000"
-    : "https://SUBSTITUA-PELA-URL-DE-PRODUCAO.com.br"; // <-- trocar quando a hospedagem estiver pronta
+    : "http://vps71668.publiccloud.com.br"; // <-- trocar quando a hospedagem estiver pronta
 
  

@@ -1,5 +1,5 @@
 import axios from "axios";
-import EntregaModel from "../models/EntregaModel.js";
+import EntregaModel from "../models/entregaModel.js";
 
 class EntregaController {
 

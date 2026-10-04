@@ -1,5 +1,3 @@
-
-
 document.getElementById("btn-sair").addEventListener("click", async function (e) {
     e.preventDefault();
 
@@ -33,19 +31,39 @@ function mostrarMensagem(texto, tipo = "sucesso") {
     toast.show();
 }
 
+// Wrapper de fetch para chamadas autenticadas: se o servidor responder 401
+// (cookie ausente/expirado), redireciona pro login em vez de deixar cada
+// função mostrar um erro genérico de conexão.
+async function fetchAutenticado(url, options = {}) {
+        const token = localStorage.getItem("token");
+	const resposta = await fetch(url, {
+	...options,
+	credentials: "include",
+	headers: {
+	...(options.headers || {}),
+	Authorization: `Bearer ${token}`
+	}
+	});
+    if (resposta.status === 401) {
+        window.location.href = "login.html";
+        return null; // interrompe o fluxo de quem chamou; a navegação já foi disparada
+    }
+    return resposta;
+}
+
 let pedidosCompletos = []; // guarda a lista inteira, sem filtro, na memória
 
 async function carregarPedidos() {
    const URL_API = `${API_URL}/pedido/adm/listar`;
 
     try {
-        const resposta = await fetch(URL_API, {
+        const resposta = await fetchAutenticado(URL_API, {
             method: "GET",
-            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             }
         });
+        if (!resposta) return;
         if (!resposta.ok) {
             throw new Error(`Erro no servidor: ${resposta.status}`);
         }
@@ -161,14 +179,14 @@ async function atualizarStatusPedido(id, novoStatus) {
     
     
       try {
-        const resposta = await fetch(`${API_URL}/pedido/adm/${id}/status`, {
+        const resposta = await fetchAutenticado(`${API_URL}/pedido/adm/${id}/status`, {
             method: "PUT",
-            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ status: novoStatus })
         });
+        if (!resposta) return;
 
         const dados = await resposta.json();
 
@@ -214,13 +232,13 @@ async function abrirDetalhePedido(id) {
     modal.show();
 
     try {
-        const resposta = await fetch(`${API_URL}/pedido/adm/${id}`, {
+        const resposta = await fetchAutenticado(`${API_URL}/pedido/adm/${id}`, {
             method: "GET",
-            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             }
         });
+        if (!resposta) return;
 
         if (!resposta.ok) {
             throw new Error(`Erro no servidor: ${resposta.status}`);
@@ -348,9 +366,8 @@ async function alternarStatusLoja() {
     const novoStatus = !estaAberta;
 
     try {
-        const resposta = await fetch(`${API_URL}/configLoja/status`, {
+        const resposta = await fetchAutenticado(`${API_URL}/configLoja/status`, {
             method: "PUT",
-            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             },
@@ -359,6 +376,7 @@ async function alternarStatusLoja() {
                 mensagem_fechado: "Estamos fechados no momento. Volte em breve!"
             })
         });
+        if (!resposta) return;
 
         if (!resposta.ok) {
             const erro = await resposta.json();
@@ -508,11 +526,11 @@ async function salvarProduto() {
     btnSalvar.textContent = "Salvando...";
 
     try {
-        const resposta = await fetch(url, {
+        const resposta = await fetchAutenticado(url, {
             method: metodo,
-            credentials: "include",
             body: formData
         });
+        if (!resposta) return;
 
         const dados = await resposta.json();
 
@@ -572,10 +590,10 @@ async function excluirProduto(id) {
     if (!confirmar) return;
 
     try {
-        const resposta = await fetch(`${API_URL}/produtos/${id}`, {
-            method: "DELETE",
-            credentials: "include"
+        const resposta = await fetchAutenticado(`${API_URL}/produtos/${id}`, {
+            method: "DELETE"
         });
+        if (!resposta) return;
 
         const dados = await resposta.json();
 
@@ -858,14 +876,14 @@ async function criarCategoriaRapida() {
 
   
         try {
-        const resposta = await fetch(`${API_URL}/categoria`, {
+        const resposta = await fetchAutenticado(`${API_URL}/categoria`, {
             method: "POST",
-            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ categoria: nome })
         });
+        if (!resposta) return;
 
 
         const dados = await resposta.json();

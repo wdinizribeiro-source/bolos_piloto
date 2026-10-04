@@ -133,6 +133,12 @@ class CategoriaController {
             });
 
         } catch (error) {
+            // Categoria ainda tem produtos vinculados (violação da chave estrangeira)
+            if (error.message.includes("foreign key constraint fails")) {
+                return res.status(409).json({
+                    error: "Essa categoria possui produtos vinculados (ativos ou inativos). Mova ou exclua os produtos para outra categoria."
+                });
+            }
             return res.status(500).json({ error: error.message });
         }
     }
